@@ -98,9 +98,10 @@ function renderNav() {
   const p = STATE.perfil;
 
   // Nome e unidade em todos os elementos da sidebar
-  ['nav-user-name', 'nav-user-name2'].forEach(id => setEl(id, p.nome));
+  // Rodapé: nome, unidade e badge do usuário logado
+  setEl('nav-user-name',    p.nome);
   setEl('nav-user-unidade', p.unidade || CONFIG.UNIDADE_PADRAO);
-  setEl('nav-badge', p.perfil.toUpperCase());
+  setEl('nav-badge',        p.perfil.toUpperCase());
 
   // Avatar com iniciais
   const iniciais = p.nome.split(' ')
