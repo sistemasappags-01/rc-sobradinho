@@ -1,0 +1,740 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login — RC Sobradinho</title>
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700;800&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet">
+  <link rel="icon" type="image/svg+xml" href="img/favicon_sistema.svg">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+
+    /* ── Variáveis ── */
+    :root {
+      --navy:    #1a3a6e;
+      --navy-d:  #0f2650;
+      --azul:    #2a5298;
+      --gold:    #f5c842;
+      --verde:   #059669;
+      --vermelho:#e11d48;
+      --tx1:     #0f172a;
+      --tx2:     #475569;
+      --tx3:     #94a3b8;
+      --border:  #e2e8f0;
+      --surface: #ffffff;
+      --page:    #f8fafc;
+      --radius:  12px;
+      --shadow:  0 4px 24px rgba(26,58,110,0.13);
+    }
+
+    [data-tema="escuro"] {
+      --tx1:    #f9fafb;
+      --tx2:    #9ca3af;
+      --tx3:    #6b7280;
+      --border: #374151;
+      --surface:#111827;
+      --page:   #0a0f1e;
+    }
+
+    *, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
+    html, body { height:100%; }
+
+    body {
+      font-family: 'DM Sans', system-ui, sans-serif;
+      display: flex;
+      min-height: 100vh;
+      background: var(--page);
+      color: var(--tx1);
+      transition: background .3s, color .3s;
+    }
+
+    /* ══════════════════════════════════════
+       COLUNA ESQUERDA
+    ══════════════════════════════════════ */
+    .lado-esq {
+      width: 42%;
+      min-height: 100vh;
+      background:
+        linear-gradient(160deg,
+          rgba(9,18,38,0.88) 0%,
+          rgba(26,58,110,0.82) 50%,
+          rgba(9,18,38,0.92) 100%),
+        url('https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=900&q=80')
+        center/cover no-repeat;
+      display: flex;
+      flex-direction: column;
+      padding: 36px 40px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Brilho dourado decorativo */
+    .lado-esq::before {
+      content: '';
+      position: absolute;
+      top: -120px; right: -120px;
+      width: 360px; height: 360px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(245,200,66,0.12) 0%, transparent 65%);
+      pointer-events: none;
+    }
+    .lado-esq::after {
+      content: '';
+      position: absolute;
+      bottom: -80px; left: -80px;
+      width: 280px; height: 280px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(42,82,152,0.30) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    /* Logo topo */
+    .esq-logo {
+      display: flex; align-items: center; gap: 12px;
+      margin-bottom: 52px; position: relative; z-index: 1;
+    }
+    .esq-logo img {
+      width: 48px; height: 48px; border-radius: 50%;
+      object-fit: cover;
+    }
+    .esq-logo-fallback {
+      width: 48px; height: 48px; border-radius: 50%;
+      background: rgba(255,255,255,0.15);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 22px;
+    }
+    .esq-logo-txt strong {
+      display: block;
+      font-family: 'Sora', sans-serif;
+      font-size: 15px; font-weight: 800;
+      color: #fff; letter-spacing: -.2px;
+    }
+    .esq-logo-txt span {
+      font-size: 12px; color: rgba(255,255,255,0.6);
+    }
+
+    /* Headline */
+    .esq-headline {
+      position: relative; z-index: 1;
+      flex: 1;
+    }
+    .esq-headline h1 {
+      font-family: 'Sora', sans-serif;
+      font-size: 34px; font-weight: 800;
+      color: #fff; line-height: 1.15;
+      letter-spacing: -.5px;
+      margin-bottom: 16px;
+    }
+    .esq-headline h1 em {
+      font-style: normal;
+      color: var(--gold);
+    }
+    .esq-headline p {
+      font-size: 15px; color: rgba(255,255,255,0.65);
+      line-height: 1.6; margin-bottom: 36px;
+      max-width: 320px;
+    }
+
+    /* Features */
+    .features { display: flex; flex-direction: column; gap: 20px; }
+    .feature  { display: flex; align-items: flex-start; gap: 14px; }
+    .feat-ico {
+      width: 42px; height: 42px; border-radius: 50%;
+      background: rgba(255,255,255,0.10);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px; flex-shrink: 0;
+    }
+    .feat-txt strong {
+      display: block;
+      font-size: 14px; font-weight: 700; color: #fff;
+      margin-bottom: 3px;
+    }
+    .feat-txt span {
+      font-size: 12.5px; color: rgba(255,255,255,0.55);
+      line-height: 1.45;
+    }
+
+    /* Rodapé esquerdo */
+    .esq-footer {
+      position: relative; z-index: 1;
+      display: flex; align-items: center; gap: 12px;
+      margin-top: 40px;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 10px;
+      padding: 12px 16px;
+    }
+    .esq-footer-ico {
+      width: 38px; height: 38px; border-radius: 50%;
+      background: rgba(245,200,66,0.18);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px; flex-shrink: 0;
+    }
+    .esq-footer-txt strong { display:block; font-size:13px; font-weight:700; color:#fff; }
+    .esq-footer-txt span   { font-size:12px; color:rgba(255,255,255,0.55); }
+
+    /* ══════════════════════════════════════
+       COLUNA DIREITA
+    ══════════════════════════════════════ */
+    .lado-dir {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 32px;
+      background: var(--surface);
+      position: relative;
+      transition: background .3s;
+    }
+
+    /* Toggle de tema */
+    .tema-toggle {
+      position: absolute;
+      top: 24px; right: 24px;
+      display: flex; align-items: center; gap: 8px;
+      font-size: 13px; font-weight: 600; color: var(--tx2);
+    }
+    .tema-btn {
+      display: flex; align-items: center;
+      background: var(--page); border: 1.5px solid var(--border);
+      border-radius: 99px; padding: 3px;
+      cursor: pointer; gap: 2px;
+      transition: all .2s;
+    }
+    .tema-opc {
+      width: 28px; height: 28px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 14px; transition: background .2s;
+      cursor: pointer;
+    }
+    .tema-opc.ativo {
+      background: var(--navy);
+    }
+
+    /* Card do form */
+    .form-card {
+      width: 100%; max-width: 420px;
+    }
+
+    /* Ícone do sistema */
+    .form-icone {
+      width: 60px; height: 60px; border-radius: 50%;
+      background: var(--page);
+      border: 1.5px solid var(--border);
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 20px;
+      overflow: hidden;
+    }
+    .form-icone img { width:100%; height:100%; object-fit:cover; }
+
+    /* Título do form */
+    .form-titulo {
+      font-family: 'Sora', sans-serif;
+      font-size: 22px; font-weight: 800;
+      color: var(--tx1); text-align: center;
+      margin-bottom: 6px;
+    }
+    .form-sub {
+      font-size: 14px; color: var(--tx2);
+      text-align: center; margin-bottom: 28px;
+    }
+
+    /* Campos */
+    .campo-grupo { margin-bottom: 18px; }
+    .campo-grupo label {
+      display: block; font-size: 13px; font-weight: 600;
+      color: var(--tx1); margin-bottom: 7px;
+    }
+    .campo-wrap {
+      display: flex; align-items: center;
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--page);
+      transition: border-color .15s, box-shadow .15s;
+      overflow: hidden;
+    }
+    .campo-wrap:focus-within {
+      border-color: var(--navy);
+      box-shadow: 0 0 0 3px rgba(26,58,110,0.10);
+    }
+    .campo-ico {
+      padding: 0 12px; color: var(--tx3);
+      font-size: 16px; flex-shrink: 0;
+    }
+    .campo-wrap input {
+      flex: 1; padding: 13px 12px 13px 0;
+      border: none; outline: none;
+      font-size: 14px; font-family: inherit;
+      color: var(--tx1); background: transparent;
+    }
+    .campo-wrap input::placeholder { color: var(--tx3); }
+    .btn-olho {
+      padding: 0 14px; background: none; border: none;
+      color: var(--tx3); cursor: pointer; font-size: 16px;
+      transition: color .15s;
+    }
+    .btn-olho:hover { color: var(--tx1); }
+
+    /* Lembrar + Esqueci */
+    .form-extra {
+      display: flex; align-items: center;
+      justify-content: space-between;
+      margin-bottom: 22px;
+    }
+    .checkbox-wrap {
+      display: flex; align-items: center; gap: 7px;
+      font-size: 13px; color: var(--tx2); cursor: pointer;
+    }
+    .checkbox-wrap input { accent-color: var(--navy); width:15px; height:15px; }
+    .link-esqueci {
+      font-size: 13px; font-weight: 600; color: var(--navy);
+      background: none; border: none; cursor: pointer;
+      font-family: inherit;
+      transition: opacity .15s;
+    }
+    .link-esqueci:hover { opacity: .75; text-decoration: underline; }
+
+    /* Mensagens */
+    .msg-erro {
+      display: none;
+      background: rgba(225,29,72,.06);
+      border: 1.5px solid rgba(225,29,72,.22);
+      color: var(--vermelho);
+      border-radius: var(--radius);
+      padding: 10px 14px;
+      font-size: 13px; font-weight: 600;
+      margin-bottom: 16px; text-align: center;
+    }
+    .msg-ok {
+      display: none;
+      background: rgba(5,150,105,.06);
+      border: 1.5px solid rgba(5,150,105,.22);
+      color: var(--verde);
+      border-radius: var(--radius);
+      padding: 10px 14px;
+      font-size: 13px; font-weight: 600;
+      margin-bottom: 16px; text-align: center;
+    }
+
+    /* Botão entrar */
+    .btn-entrar {
+      width: 100%; padding: 14px;
+      background: linear-gradient(135deg, var(--navy-d), var(--navy));
+      color: #fff; border: none; border-radius: var(--radius);
+      font-family: 'Sora', sans-serif;
+      font-size: 15px; font-weight: 700;
+      cursor: pointer; display: flex;
+      align-items: center; justify-content: center; gap: 10px;
+      box-shadow: 0 4px 16px rgba(26,58,110,0.30);
+      transition: filter .15s, transform .1s;
+      margin-bottom: 20px;
+    }
+    .btn-entrar:hover:not(:disabled)  { filter: brightness(1.10); }
+    .btn-entrar:active:not(:disabled) { transform: scale(0.98); }
+    .btn-entrar:disabled { opacity: .55; cursor: not-allowed; }
+
+    /* Separador OU */
+    .separador {
+      display: flex; align-items: center; gap: 12px;
+      margin-bottom: 20px; color: var(--tx3); font-size: 13px;
+    }
+    .separador::before, .separador::after {
+      content: ''; flex: 1; height: 1px; background: var(--border);
+    }
+
+    /* Card acesso restrito */
+    .card-restrito {
+      display: flex; align-items: center; gap: 12px;
+      padding: 14px 16px;
+      background: var(--page);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius);
+      transition: background .3s;
+    }
+    .restrito-ico {
+      width: 40px; height: 40px; border-radius: 10px;
+      background: rgba(26,58,110,0.08);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 20px; flex-shrink: 0;
+    }
+    .restrito-txt strong { display:block; font-size:13.5px; font-weight:700; color:var(--tx1); }
+    .restrito-txt span   { font-size:12px; color:var(--tx2); }
+
+    /* Rodapé direita */
+    .dir-footer {
+      position: absolute; bottom: 20px;
+      font-size: 12px; color: var(--tx3); text-align: center;
+    }
+
+    /* ── Tela de recuperação ── */
+    .tela { display: none; }
+
+    /* ── Responsivo ── */
+    @media (max-width: 768px) {
+      body       { flex-direction: column; }
+      .lado-esq  { width: 100%; min-height: 280px; padding: 28px 24px; }
+      .esq-headline h1 { font-size: 26px; }
+      .features  { display: none; }
+      .esq-footer{ margin-top: 20px; }
+      .lado-dir  { padding: 32px 20px 60px; justify-content: flex-start; }
+      .tema-toggle { top: 16px; right: 16px; }
+    }
+
+    @media (max-width: 480px) {
+      .lado-dir  { padding: 24px 16px 56px; }
+      .form-card { max-width: 100%; }
+    }
+
+  </style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════
+     LADO ESQUERDO
+══════════════════════════════════════ -->
+<div class="lado-esq">
+
+  <div class="esq-logo">
+    <img src="img/logo_gdf.jpg" alt="GDF"
+         onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+    <div class="esq-logo-fallback" style="display:none">🍽️</div>
+    <div class="esq-logo-txt">
+      <strong>RC Sobradinho</strong>
+      <span>Pesquisa de Satisfação · GDF</span>
+    </div>
+  </div>
+
+  <div class="esq-headline">
+    <h1>Inteligência para<br>melhores <em>experiências.</em></h1>
+    <p>Monitore avaliações, identifique oportunidades e promova refeições cada vez melhores para a comunidade.</p>
+
+    <div class="features">
+      <div class="feature">
+        <div class="feat-ico">📈</div>
+        <div class="feat-txt">
+          <strong>Insights automáticos</strong>
+          <span>Análises geradas a partir das avaliações em tempo real.</span>
+        </div>
+      </div>
+      <div class="feature">
+        <div class="feat-ico">🔒</div>
+        <div class="feat-txt">
+          <strong>Dados seguros</strong>
+          <span>Informações protegidas pela LGPD com segurança e privacidade.</span>
+        </div>
+      </div>
+      <div class="feature">
+        <div class="feat-ico">👥</div>
+        <div class="feat-txt">
+          <strong>Gestão eficiente</strong>
+          <span>Acompanhe indicadores e tome decisões com base em dados reais.</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="esq-footer">
+    <div class="esq-footer-ico">🛡️</div>
+    <div class="esq-footer-txt">
+      <strong>Sistema seguro e confiável</strong>
+      <span>Seus dados estão protegidos · Ouvidoria: Disque 162</span>
+    </div>
+  </div>
+
+</div>
+
+<!-- ══════════════════════════════════════
+     LADO DIREITO
+══════════════════════════════════════ -->
+<div class="lado-dir">
+
+  <!-- Toggle tema -->
+  <div class="tema-toggle">
+    <span>Tema</span>
+    <div class="tema-btn" onclick="toggleTema()">
+      <div class="tema-opc" id="opc-claro" onclick="setTema('claro')">☀️</div>
+      <div class="tema-opc ativo" id="opc-escuro" onclick="setTema('escuro')">🌙</div>
+    </div>
+  </div>
+
+  <div class="form-card">
+
+    <!-- ── TELA DE LOGIN ── -->
+    <div id="tela-login">
+
+      <!-- Ícone -->
+      <div class="form-icone">
+        <img src="img/logo_sistema.svg" alt="Sistema"
+             onerror="this.outerHTML='<span style=\'font-size:28px\'>📊</span>'">
+      </div>
+
+      <div class="form-titulo">Bem-vindo de volta! 👋</div>
+      <div class="form-sub">Faça login para acessar o sistema</div>
+
+      <div class="msg-erro" id="erro-login"></div>
+      <div class="msg-ok"   id="ok-login"></div>
+
+      <!-- E-mail -->
+      <div class="campo-grupo">
+        <label for="email">E-mail</label>
+        <div class="campo-wrap">
+          <span class="campo-ico">✉️</span>
+          <input type="email" id="email" placeholder="seu@email.com"
+                 autocomplete="email" onkeydown="if(event.key==='Enter')focarSenha()">
+        </div>
+      </div>
+
+      <!-- Senha -->
+      <div class="campo-grupo">
+        <label for="senha">Senha</label>
+        <div class="campo-wrap">
+          <span class="campo-ico">🔑</span>
+          <input type="password" id="senha" placeholder="Sua senha"
+                 autocomplete="current-password"
+                 onkeydown="if(event.key==='Enter')entrar()">
+          <button class="btn-olho" type="button" onclick="toggleSenha()" title="Mostrar/ocultar senha">
+            👁️
+          </button>
+        </div>
+      </div>
+
+      <!-- Lembrar + Esqueci -->
+      <div class="form-extra">
+        <label class="checkbox-wrap">
+          <input type="checkbox" id="lembrar"> Lembrar de mim
+        </label>
+        <button class="link-esqueci" onclick="irParaRecuperacao()">Esqueci minha senha</button>
+      </div>
+
+      <!-- Botão entrar -->
+      <button class="btn-entrar" id="btn-entrar" onclick="entrar()">
+        <span>→</span> Entrar no sistema
+      </button>
+
+      <div class="separador">ou</div>
+
+      <!-- Card acesso restrito -->
+      <div class="card-restrito">
+        <div class="restrito-ico">🏛️</div>
+        <div class="restrito-txt">
+          <strong>Acesso restrito</strong>
+          <span>Utilize suas credenciais institucionais para continuar.</span>
+        </div>
+      </div>
+
+    </div><!-- /tela-login -->
+
+    <!-- ── TELA DE RECUPERAÇÃO ── -->
+    <div id="tela-recuperacao" class="tela">
+
+      <div class="form-icone" style="background:rgba(245,200,66,0.10);border-color:rgba(245,200,66,0.30)">
+        📧
+      </div>
+
+      <div class="form-titulo">Recuperar acesso</div>
+      <div class="form-sub">Enviaremos um link de redefinição para seu e-mail</div>
+
+      <div class="msg-erro" id="erro-rec"></div>
+      <div class="msg-ok"   id="ok-rec"></div>
+
+      <div class="campo-grupo">
+        <label for="email-rec">E-mail cadastrado</label>
+        <div class="campo-wrap">
+          <span class="campo-ico">✉️</span>
+          <input type="email" id="email-rec" placeholder="seu@email.com"
+                 onkeydown="if(event.key==='Enter')recuperar()">
+        </div>
+      </div>
+
+      <button class="btn-entrar" id="btn-rec" onclick="recuperar()">
+        📩 Enviar link de recuperação
+      </button>
+
+      <div style="text-align:center;margin-top:16px">
+        <button class="link-esqueci" onclick="voltarLogin()">← Voltar ao login</button>
+      </div>
+
+    </div><!-- /tela-recuperacao -->
+
+  </div><!-- /form-card -->
+
+  <div class="dir-footer">
+    © 2026 Restaurante Comunitário de Sobradinho · GDF. Todos os direitos reservados.
+  </div>
+
+</div><!-- /lado-dir -->
+
+<script>
+  const SUPABASE_URL = 'https://kosiqdzgyutdsexclzvk.supabase.co';
+  const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imtvc2lxZHpneXV0ZHNleGNsenZrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc0MjQyMTIsImV4cCI6MjA5MzAwMDIxMn0.Aq4ZExIo8O82eB0B2-t8Nh-NyBfCm3sb1vRhutlLOFo';
+
+  const { createClient } = supabase;
+  const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+  // ── Tema ──────────────────────────────────────────────
+  function setTema(t) {
+    document.documentElement.setAttribute('data-tema', t);
+    document.getElementById('opc-claro').classList.toggle('ativo',  t==='claro');
+    document.getElementById('opc-escuro').classList.toggle('ativo', t==='escuro');
+    localStorage.setItem('tema', t);
+  }
+  function toggleTema() {
+    const atual = document.documentElement.getAttribute('data-tema') || 'escuro';
+    setTema(atual==='claro' ? 'escuro' : 'claro');
+  }
+  // Aplicar tema salvo
+  const temaSalvo = localStorage.getItem('tema') || 'claro';
+  setTema(temaSalvo);
+
+  // ── Erros na URL ──────────────────────────────────────
+  const params = new URLSearchParams(location.search);
+  if (params.get('erro') === 'inativo') mostrarErro('login', '❌ Seu acesso está inativo. Contate o administrador.');
+
+  // ── Verificar sessão existente ────────────────────────
+  (async () => {
+    const { data: { session } } = await sb.auth.getSession();
+    if (session) location.href = 'app.html';
+  })();
+
+  // ── Toggle senha ──────────────────────────────────────
+  function toggleSenha() {
+    const input = document.getElementById('senha');
+    input.type = input.type === 'password' ? 'text' : 'password';
+  }
+
+  function focarSenha() {
+    document.getElementById('senha').focus();
+  }
+
+  // ── Mensagens ─────────────────────────────────────────
+  function mostrarErro(contexto, msg) {
+    const id = contexto === 'login' ? 'erro-login' : 'erro-rec';
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.textContent = msg;
+    el.style.display = 'block';
+  }
+  function mostrarOk(contexto, msg) {
+    const id = contexto === 'login' ? 'ok-login' : 'ok-rec';
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.textContent = msg;
+    el.style.display = 'block';
+  }
+  function limparMsgs() {
+    ['erro-login','ok-login','erro-rec','ok-rec'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.style.display = 'none';
+    });
+  }
+
+  // ── Entrar ────────────────────────────────────────────
+  async function entrar() {
+    limparMsgs();
+    const email = document.getElementById('email').value.trim();
+    const senha = document.getElementById('senha').value;
+    const btn   = document.getElementById('btn-entrar');
+
+    if (!email || !senha) {
+      mostrarErro('login', '⚠️ Preencha e-mail e senha.');
+      return;
+    }
+
+    btn.disabled    = true;
+    btn.innerHTML   = '<span class="spinner-sm"></span> Entrando…';
+
+    const { data, error } = await sb.auth.signInWithPassword({ email, password: senha });
+
+    if (error) {
+      const msg = error.message || '';
+      if (msg.includes('Invalid login credentials') || msg.includes('invalid_credentials'))
+        mostrarErro('login', '❌ E-mail ou senha incorretos.');
+      else if (msg.includes('Email not confirmed'))
+        mostrarErro('login', '❌ E-mail não confirmado. Verifique sua caixa de entrada.');
+      else if (msg.includes('Too many requests'))
+        mostrarErro('login', '⏳ Muitas tentativas. Aguarde alguns minutos.');
+      else
+        mostrarErro('login', `❌ ${msg}`);
+
+      btn.disabled  = false;
+      btn.innerHTML = '<span>→</span> Entrar no sistema';
+      return;
+    }
+
+    // Verificar perfil ativo
+    const token = data.session.access_token;
+    const rows  = await fetch(
+      `${SUPABASE_URL}/rest/v1/perfis?id=eq.${data.user.id}&select=ativo`,
+      { headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' } }
+    ).then(r => r.json()).catch(() => []);
+
+    const perfil = rows?.[0];
+    if (!perfil || !perfil.ativo) {
+      await sb.auth.signOut();
+      mostrarErro('login', '❌ Usuário sem acesso ativo. Contate o administrador.');
+      btn.disabled  = false;
+      btn.innerHTML = '<span>→</span> Entrar no sistema';
+      return;
+    }
+
+    // Sucesso
+    location.href = 'app.html';
+  }
+
+  // ── Recuperar senha ───────────────────────────────────
+  async function recuperar() {
+    limparMsgs();
+    const email = document.getElementById('email-rec').value.trim();
+    const btn   = document.getElementById('btn-rec');
+
+    if (!email) { mostrarErro('rec', '⚠️ Informe o e-mail cadastrado.'); return; }
+
+    btn.disabled  = true;
+    btn.innerHTML = '⏳ Enviando…';
+
+    const { error } = await sb.auth.resetPasswordForEmail(email, {
+      redirectTo: window.location.origin + '/pesquisa-rc-sobradinho-v2/app.html'
+    });
+
+    if (error) {
+      mostrarErro('rec', `❌ ${error.message}`);
+    } else {
+      mostrarOk('rec', `✅ Link enviado para ${email}. Verifique sua caixa de entrada.`);
+    }
+
+    btn.disabled  = false;
+    btn.innerHTML = '📩 Enviar link de recuperação';
+  }
+
+  // ── Navegação entre telas ─────────────────────────────
+  function irParaRecuperacao() {
+    limparMsgs();
+    document.getElementById('tela-login').style.display       = 'none';
+    document.getElementById('tela-recuperacao').style.display = 'block';
+    document.getElementById('email-rec').value = document.getElementById('email').value;
+    document.getElementById('email-rec').focus();
+  }
+
+  function voltarLogin() {
+    limparMsgs();
+    document.getElementById('tela-recuperacao').style.display = 'none';
+    document.getElementById('tela-login').style.display       = 'block';
+  }
+</script>
+
+<style>
+  /* Spinner botão */
+  .spinner-sm {
+    display: inline-block;
+    width: 14px; height: 14px;
+    border: 2px solid rgba(255,255,255,0.3);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: spin .6s linear infinite;
+    vertical-align: middle;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+</style>
+</body>
+</html>
