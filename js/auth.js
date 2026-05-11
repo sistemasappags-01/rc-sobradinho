@@ -165,6 +165,7 @@ function navigate(secao, pushState = true) {
     if (secao === 'admin' && STATE.perfil?.perfil !== 'admin') secao = 'dashboard';
 
     STATE.secao = secao;
+    console.log('[nav] navigate(' + secao + ') chamado de:', new Error().stack.split('\n').slice(2,4).join(' | '));
 
     // Título topbar mobile
     const titulos = { dashboard: 'Dashboard', respostas: 'Respostas', admin: 'Usuários' };

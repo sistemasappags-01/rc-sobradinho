@@ -2,7 +2,23 @@
 //  dashboard.js — Painel principal de indicadores
 // ═══════════════════════════════════════════════════════════
 
+// Detector de loop — identifica chamadas rápidas repetidas
+let _rdCount = 0, _rdLast = 0;
+
 function renderDashboard() {
+  const now = Date.now();
+  if (now - _rdLast < 1000) {
+    _rdCount++;
+    if (_rdCount > 2) {
+      console.error('[LOOP] renderDashboard chamado ' + _rdCount + 'x em 1s. Stack:', new Error().stack);
+      return; // interrompe o loop
+    }
+  } else {
+    _rdCount = 0;
+  }
+  _rdLast = now;
+  console.log('[dash] renderDashboard chamado — stack:', new Error().stack.split('\n').slice(1,4).join(' | '));
+
   try {
   const d  = STATE.dadosAtual;
   const da = STATE.dadosAnt;
