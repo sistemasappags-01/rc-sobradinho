@@ -8,7 +8,7 @@ async function renderRespostas() {
   // Carregar dados de respostas se necessário
   if (!_resCarregado) {
     await carregarRespostas();
-    _resCarregado = true;
+    _resCarregado = false;
   } else {
     aplicarFiltrosRes();
   }

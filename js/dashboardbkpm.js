@@ -90,7 +90,6 @@ function renderEvolucao(d) {
         borderDash:[4,3], tension:0.4, pointRadius:3, pointBackgroundColor:'#1a3a6e', yAxisID:'y2' }
     ] },
     options: { responsive:true, maintainAspectRatio:false,
-      animation: { duration: typeof _refreshSilencioso !== 'undefined' && _refreshSilencioso ? 0 : 600 },
       interaction:{ mode:'index', intersect:false },
       plugins:{ legend:{ display:true, position:'top',
         labels:{ boxWidth:10, font:{size:11}, color:'#475569' } } },
@@ -171,7 +170,6 @@ function renderDistrib(d) {
       backgroundColor:['#059669','#10b981','#d97706','#e11d48'],
       borderWidth:2, borderColor:'#fff', hoverOffset:3 }] },
     options: { responsive:true, maintainAspectRatio:false, cutout:'62%',
-      animation: { duration: typeof _refreshSilencioso !== 'undefined' && _refreshSilencioso ? 0 : 500 },
       plugins:{ legend:{display:false} } }
   });
 
