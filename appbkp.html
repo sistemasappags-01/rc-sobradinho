@@ -27,15 +27,10 @@
 </div>
 
 <!-- Layout SPA -->
-<div class="app-layout" id="app-layout" style="display:none">
+<div class="app-layout">
 
   <!-- SIDEBAR -->
   <aside class="sidebar" id="sidebar">
-
-    <!-- Toggle colapsar sidebar -->
-    <button class="sidebar-toggle" id="sidebar-toggle" onclick="toggleSidebar()" title="Recolher menu">
-      ◀
-    </button>
 
     <!-- Marca / Logo -->
     <div class="sidebar-brand">
@@ -52,46 +47,31 @@
       <!-- Principal -->
       <div class="sidebar-grupo">
         <div class="sidebar-grupo-label">Principal</div>
-        <!-- Dashboard -->
         <button class="sidebar-link ativo" data-secao="dashboard" onclick="navigate('dashboard')">
-          <span class="sidebar-link-icon">📊</span>
-          <span class="sidebar-link-txt">Dashboard</span>
+          <span class="sidebar-link-icon">📊</span> Dashboard
         </button>
-        <div class="sidebar-sub" id="sub-dashboard">
-          <button class="sidebar-sub-link" onclick="exportarCSV()">
-            <span>⬇️</span><span class="sidebar-link-txt">Exportar CSV</span>
-          </button>
-          <button class="sidebar-sub-link" onclick="window.print()">
-            <span>🖨️</span><span class="sidebar-link-txt">Relatório PDF</span>
-          </button>
-        </div>
-
-        <!-- Respostas -->
         <button class="sidebar-link" data-secao="respostas" onclick="navigate('respostas')">
-          <span class="sidebar-link-icon">📋</span>
-          <span class="sidebar-link-txt">Respostas</span>
+          <span class="sidebar-link-icon">📋</span> Respostas
         </button>
-        <div class="sidebar-sub" id="sub-respostas" style="display:none">
-          <button class="sidebar-sub-link" onclick="exportarCSVRes()">
-            <span>⬇️</span><span class="sidebar-link-txt">Exportar CSV</span>
-          </button>
-          <button class="sidebar-sub-link" onclick="window.print()">
-            <span>🖨️</span><span class="sidebar-link-txt">Relatório PDF</span>
-          </button>
-          <a class="sidebar-sub-link" href="../formulario_externo.html" target="_blank">
-            <span>✏️</span><span class="sidebar-link-txt">Nova Resposta</span>
-          </a>
-        </div>
-
-        <!-- Usuários -->
         <button class="sidebar-link" data-secao="admin" id="nav-admin-item"
           onclick="navigate('admin')" style="display:none">
-          <span class="sidebar-link-icon">👥</span>
-          <span class="sidebar-link-txt">Usuários</span>
+          <span class="sidebar-link-icon">👥</span> Usuários
         </button>
       </div>
 
-
+      <!-- Relatórios -->
+      <div class="sidebar-grupo">
+        <div class="sidebar-grupo-label">Relatórios</div>
+        <button class="sidebar-link" onclick="window.print()">
+          <span class="sidebar-link-icon">🖨️</span> Relatório PDF
+        </button>
+        <button class="sidebar-link" onclick="exportarCSV()">
+          <span class="sidebar-link-icon">⬇️</span> Exportar CSV
+        </button>
+        <a class="sidebar-link" href="../formulario_externo.html" target="_blank">
+          <span class="sidebar-link-icon">✏️</span> Nova resposta
+        </a>
+      </div>
 
     </nav>
 
@@ -117,11 +97,17 @@
   <!-- CONTEÚDO PRINCIPAL -->
   <div class="content">
 
-    <!-- TOPBAR (apenas mobile — hamburguer para abrir sidebar) -->
-    <header class="topbar-mobile" id="topbar-mobile">
+    <!-- TOPBAR -->
+    <header class="topbar">
       <button class="topbar-hamburger" onclick="toggleMobileMenu()">☰</button>
-      <div class="topbar-titulo-m" id="topbar-titulo">Dashboard</div>
-      <span class="tag-data" id="tag-periodo" style="font-size:11px"></span>
+      <div class="topbar-titulo" id="topbar-titulo">Dashboard</div>
+      <div class="topbar-acoes">
+        <button class="btn-periodo ativo" data-dias="7"  onclick="setDias(7)">7 dias</button>
+        <button class="btn-periodo"       data-dias="30" onclick="setDias(30)">30 dias</button>
+        <button class="btn-periodo"       data-dias="90" onclick="setDias(90)">90 dias</button>
+        <div class="topbar-divider"></div>
+        <span class="tag-data" id="tag-periodo">—</span>
+      </div>
     </header>
 
     <!-- MAIN -->
@@ -131,23 +117,6 @@
            SEÇÃO DASHBOARD
       ══════════════════════════════════════════════════ -->
       <section id="sec-dashboard" class="section">
-
-        <!-- Cabeçalho da seção -->
-        <div class="sec-header">
-          <div>
-            <h1 class="sec-h1">Dashboard</h1>
-            <p class="sec-h1-sub">Visão geral da satisfação — <span id="data-atual"></span></p>
-          </div>
-          <div class="sec-acoes">
-            <button class="btn-periodo ativo" data-dias="7"  onclick="setDias(7)">7 dias</button>
-            <button class="btn-periodo"       data-dias="30" onclick="setDias(30)">30 dias</button>
-            <button class="btn-periodo"       data-dias="90" onclick="setDias(90)">90 dias</button>
-            <div class="sec-divider"></div>
-            <span class="tag-data" id="tag-periodo-desk">—</span>
-            <button class="btn-topo" onclick="exportarCSV()">⬇️ CSV</button>
-            <button class="btn-topo" onclick="window.print()">🖨️ PDF</button>
-          </div>
-        </div>
 
         <!-- KPIs -->
         <div class="grid4 mb20">
@@ -303,15 +272,14 @@
       ══════════════════════════════════════════════════ -->
       <section id="sec-respostas" class="section">
 
-        <!-- Cabeçalho da seção -->
-        <div class="sec-header">
+        <!-- Header -->
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:20px;flex-wrap:wrap">
           <div>
-            <h1 class="sec-h1">Respostas</h1>
-            <p class="sec-h1-sub">Acompanhe e analise as avaliações registradas.</p>
+            <h1 style="font-family:'Sora',sans-serif;font-size:22px;font-weight:800;color:var(--tx1)">Respostas</h1>
+            <p style="font-size:13px;color:var(--tx2);margin-top:3px">Acompanhe e analise as avaliações registradas.</p>
           </div>
-          <div class="sec-acoes">
-            <button class="btn-topo" onclick="exportarCSVRes()">⬇️ CSV</button>
-            <button class="btn-topo" onclick="window.print()">🖨️ PDF</button>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <button class="btn-topo" onclick="exportarCSVRes()">⬇️ Exportar CSV</button>
             <a class="btn-topo azul" href="../formulario_externo.html" target="_blank">＋ Nova resposta</a>
           </div>
         </div>

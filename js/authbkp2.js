@@ -126,7 +126,7 @@ function navigate(secao, pushState = true) {
 
   STATE.secao = secao;
 
-  // Atualizar título topbar mobile
+  // Atualizar título da topbar
   const titulos = { dashboard: 'Dashboard', respostas: 'Respostas', admin: 'Usuários' };
   setEl('topbar-titulo', titulos[secao] || 'Dashboard');
 
@@ -139,15 +139,6 @@ function navigate(secao, pushState = true) {
   // Mostrar seção ativa
   const target = document.getElementById(`sec-${secao}`);
   if (target) target.style.display = 'block';
-
-  // Subitens — mostrar só os da seção ativa
-  ['dashboard','respostas'].forEach(id => {
-    const sub = document.getElementById(`sub-${id}`);
-    if (sub) sub.style.display = id === secao ? 'block' : 'none';
-  });
-
-  // Atualizar tag de data no cabeçalho desktop
-  if (STATE.dadosAtual) calcularPeriodos();
 
   // Atualizar nav ativa
   document.querySelectorAll('[data-secao]').forEach(link => {
@@ -214,14 +205,11 @@ function calcularPeriodos() {
   });
 
   // Atualizar tag de período
-  const tagTxt =
+  const tag = document.getElementById('tag-periodo');
+  if (tag) tag.textContent =
     iniAt.toLocaleDateString('pt-BR', { day:'2-digit', month:'2-digit', year:'numeric' })
     + ' – ' +
     hoje.toLocaleDateString('pt-BR', { day:'2-digit', month:'2-digit', year:'numeric' });
-  ['tag-periodo','tag-periodo-desk'].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.textContent = tagTxt;
-  });
 }
 
 // ── Mudar filtro de dias ─────────────────────────────────
@@ -258,28 +246,6 @@ function toggleMobileMenu() {
   sidebar?.classList.toggle('mobile-aberta');
   overlay?.classList.toggle('visivel');
 }
-
-function toggleSidebar() {
-  const sidebar  = document.getElementById('sidebar');
-  const content  = document.querySelector('.content');
-  const btn      = document.getElementById('sidebar-toggle');
-  const colapsada = sidebar?.classList.toggle('colapsada');
-  content?.classList.toggle('expandido', colapsada);
-  if (btn) btn.textContent = colapsada ? '▶' : '◀';
-  localStorage.setItem('sidebar-colapsada', colapsada ? '1' : '0');
-}
-
-// Restaurar estado da sidebar
-(function() {
-  if (localStorage.getItem('sidebar-colapsada') === '1') {
-    const sidebar = document.getElementById('sidebar');
-    const content = document.querySelector('.content');
-    const btn     = document.getElementById('sidebar-toggle');
-    sidebar?.classList.add('colapsada');
-    content?.classList.add('expandido');
-    if (btn) btn.textContent = '▶';
-  }
-})();
 
 function fecharMobileMenu() {
   document.getElementById('sidebar')?.classList.remove('mobile-aberta');

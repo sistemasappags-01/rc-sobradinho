@@ -123,19 +123,10 @@ function renderGraficosRes() {
   });
 
   setEl('res-pizza-total', totalN);
-  const pizzaItens = [
-    { nome:'Ótimo',  val:cont['Ótimo'],  cor:'#059669' },
-    { nome:'Bom',    val:cont['Bom'],    cor:'#10b981' },
-    { nome:'Regular',val:cont['Regular'],cor:'#d97706' },
-    { nome:'Ruim',   val:cont['Ruim'],   cor:'#e11d48' },
-  ];
-  setHTML('res-leg-pizza', pizzaItens.map(({ nome, val, cor }) =>
-    `<div class="leg-item">
-      <div class="leg-cor" style="background:${cor}"></div>
-      <span class="leg-txt">${nome}</span>
-      <span class="leg-val">${val}</span>
-      <span class="leg-pct">(${pctStr(val, totalN)})</span>
-    </div>`
+  setHTML('res-leg-pizza', ['Ótimo','Bom','Regular','Ruim'].map((n,i)=>({n,v:[cont['Ótimo'],cont['Bom'],cont['Regular'],cont['Ruim']][i],c:['#059669','#10b981','#d97706','#e11d48'][i]})).map(({n,v,c})=>
+    `<div class="leg-item"><div class="leg-cor" style="background:${c}"></div>
+     <span class="leg-txt">${n}</span><span class="leg-val">${v}</span>
+     <span class="leg-pct">(${pctStr(v,totalN)})</span></div>`
   ).join(''));
 
   // Donut por refeição
@@ -152,22 +143,11 @@ function renderGraficosRes() {
       plugins:{ legend:{display:false} } }
   });
 
-  // Total real = soma dos 3 periodos (exclui registros sem periodo)
-  const totalRef = porRef.almoco + porRef.cafe + porRef.jantar;
-  setEl('res-ref-total', totalRef);
-
-  const refItens = [
-    ['Almoço',       porRef.almoco, '#2563eb'],
-    ['Café da Manhã',porRef.cafe,   '#ea580c'],
-    ['Jantar',       porRef.jantar, '#7c3aed'],
-  ];
-  setHTML('res-leg-ref', refItens.map(([nome, val, cor]) =>
-    `<div class="leg-item">
-      <div class="leg-cor" style="background:${cor}"></div>
-      <span class="leg-txt">${nome}</span>
-      <span class="leg-val">${val}</span>
-      <span class="leg-pct">(${pctStr(val, totalRef)})</span>
-    </div>`
+  setEl('res-ref-total', d.length);
+  setHTML('res-leg-ref', [['Almoço',porRef.almoco,'#2563eb'],['Café da Manhã',porRef.cafe,'#ea580c'],['Jantar',porRef.jantar,'#7c3aed']].map(([n,v,c])=>
+    `<div class="leg-item"><div class="leg-cor" style="background:${c}"></div>
+     <span class="leg-txt">${n}</span><span class="leg-val">${v}</span>
+     <span class="leg-pct">(${pctStr(v,d.length)})</span></div>`
   ).join(''));
 
   // Médias
