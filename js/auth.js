@@ -96,11 +96,19 @@ async function checkAuth() {
 // ── Renderizar informações do usuário na nav ─────────────
 function renderNav() {
   const p = STATE.perfil;
-  // Preencher todos os elementos de nome/unidade na sidebar
+
+  // Nome e unidade em todos os elementos da sidebar
   ['nav-user-name', 'nav-user-name2'].forEach(id => setEl(id, p.nome));
-  ['nav-user-unidade', 'nav-user-unidade2'].forEach(id => setEl(id, p.unidade || CONFIG.UNIDADE_PADRAO));
+  setEl('nav-user-unidade', p.unidade || CONFIG.UNIDADE_PADRAO);
   setEl('nav-badge', p.perfil.toUpperCase());
 
+  // Avatar com iniciais
+  const iniciais = p.nome.split(' ')
+    .filter(s => s.length > 0).slice(0, 2)
+    .map(s => s[0].toUpperCase()).join('');
+  setEl('sb-avatar', iniciais || '?');
+
+  // Admin: mostrar item Usuários
   if (p.perfil === 'admin') {
     ['nav-admin-item', 'nav-mobile-admin'].forEach(id => {
       const el = document.getElementById(id);
@@ -149,8 +157,8 @@ function navigate(secao, pushState = true) {
   // Atualizar tag de data no cabeçalho desktop
   if (STATE.dadosAtual) calcularPeriodos();
 
-  // Atualizar nav ativa
-  document.querySelectorAll('[data-secao]').forEach(link => {
+  // Atualizar link ativo na sidebar
+  document.querySelectorAll('.sb-link[data-secao]').forEach(link => {
     link.classList.toggle('ativo', link.dataset.secao === secao);
   });
 
@@ -260,26 +268,22 @@ function toggleMobileMenu() {
 }
 
 function toggleSidebar() {
-  const sidebar  = document.getElementById('sidebar');
-  const content  = document.querySelector('.content');
-  const btn      = document.getElementById('sidebar-toggle');
+  const sidebar   = document.getElementById('sidebar');
+  const content   = document.querySelector('.content');
   const colapsada = sidebar?.classList.toggle('colapsada');
-  content?.classList.toggle('expandido', colapsada);
-  if (btn) btn.textContent = colapsada ? '▶' : '◀';
+  if (content) content.style.marginLeft = colapsada ? '64px' : '220px';
   localStorage.setItem('sidebar-colapsada', colapsada ? '1' : '0');
 }
 
-// Restaurar estado da sidebar
-(function() {
+// Restaurar estado da sidebar ao carregar
+document.addEventListener('DOMContentLoaded', function () {
   if (localStorage.getItem('sidebar-colapsada') === '1') {
     const sidebar = document.getElementById('sidebar');
     const content = document.querySelector('.content');
-    const btn     = document.getElementById('sidebar-toggle');
     sidebar?.classList.add('colapsada');
-    content?.classList.add('expandido');
-    if (btn) btn.textContent = '▶';
+    if (content) content.style.marginLeft = '64px';
   }
-})();
+});
 
 function fecharMobileMenu() {
   document.getElementById('sidebar')?.classList.remove('mobile-aberta');

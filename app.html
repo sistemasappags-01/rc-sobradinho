@@ -32,81 +32,81 @@
   <!-- SIDEBAR -->
   <aside class="sidebar" id="sidebar">
 
-    <!-- Toggle colapsar sidebar -->
-    <button class="sidebar-toggle" id="sidebar-toggle" onclick="toggleSidebar()" title="Recolher menu">
-      ◀
-    </button>
-
-    <!-- Marca / Logo -->
-    <div class="sidebar-brand">
-      <img src="../logo_gdf.jpg" alt="GDF"
-           onerror="this.style.display='none'">
-      <div class="sidebar-brand-txt">
-        <div class="sidebar-brand-nome" id="nav-user-name">Carregando…</div>
-        <div class="sidebar-brand-sub" id="nav-user-unidade"></div>
+    <!-- ── TOPO: toggle ── -->
+    <div class="sb-header">
+      <button class="sb-toggle" id="sb-toggle" onclick="toggleSidebar()" title="Recolher menu">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+      <div class="sb-brand" id="sb-brand">
+        <img src="img/logo_gdf.jpg" alt="GDF"
+             onerror="this.style.display='none'">
+        <div class="sb-brand-txt">
+          <strong id="nav-user-name">…</strong>
+          <span id="nav-user-unidade"></span>
+        </div>
       </div>
     </div>
 
-    <nav class="sidebar-nav">
+    <!-- ── NAV ── -->
+    <nav class="sb-nav">
 
-      <!-- Principal -->
-      <div class="sidebar-grupo">
-        <div class="sidebar-grupo-label">Principal</div>
-        <!-- Dashboard -->
-        <button class="sidebar-link ativo" data-secao="dashboard" onclick="navigate('dashboard')">
-          <span class="sidebar-link-icon">📊</span>
-          <span class="sidebar-link-txt">Dashboard</span>
+      <div class="sb-grupo-label">Menu</div>
+
+      <!-- Dashboard -->
+      <button class="sb-link ativo" data-secao="dashboard" onclick="navigate('dashboard')"
+              data-tip="Dashboard">
+        <span class="sb-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg></span>
+        <span class="sb-txt">Dashboard</span>
+      </button>
+      <div class="sb-sub" id="sub-dashboard">
+        <button class="sb-sub-link" onclick="exportarCSV()" data-tip="Exportar CSV">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> <span class="sb-txt">Exportar CSV</span>
         </button>
-        <div class="sidebar-sub" id="sub-dashboard">
-          <button class="sidebar-sub-link" onclick="exportarCSV()">
-            <span>⬇️</span><span class="sidebar-link-txt">Exportar CSV</span>
-          </button>
-          <button class="sidebar-sub-link" onclick="window.print()">
-            <span>🖨️</span><span class="sidebar-link-txt">Relatório PDF</span>
-          </button>
-        </div>
-
-        <!-- Respostas -->
-        <button class="sidebar-link" data-secao="respostas" onclick="navigate('respostas')">
-          <span class="sidebar-link-icon">📋</span>
-          <span class="sidebar-link-txt">Respostas</span>
-        </button>
-        <div class="sidebar-sub" id="sub-respostas" style="display:none">
-          <button class="sidebar-sub-link" onclick="exportarCSVRes()">
-            <span>⬇️</span><span class="sidebar-link-txt">Exportar CSV</span>
-          </button>
-          <button class="sidebar-sub-link" onclick="window.print()">
-            <span>🖨️</span><span class="sidebar-link-txt">Relatório PDF</span>
-          </button>
-          <a class="sidebar-sub-link" href="../formulario_externo.html" target="_blank">
-            <span>✏️</span><span class="sidebar-link-txt">Nova Resposta</span>
-          </a>
-        </div>
-
-        <!-- Usuários -->
-        <button class="sidebar-link" data-secao="admin" id="nav-admin-item"
-          onclick="navigate('admin')" style="display:none">
-          <span class="sidebar-link-icon">👥</span>
-          <span class="sidebar-link-txt">Usuários</span>
+        <button class="sb-sub-link" onclick="window.print()" data-tip="Relatório PDF">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg> <span class="sb-txt">Relatório PDF</span>
         </button>
       </div>
 
+      <!-- Respostas -->
+      <button class="sb-link" data-secao="respostas" onclick="navigate('respostas')"
+              data-tip="Respostas">
+        <span class="sb-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><line x1="9" y1="12" x2="15" y2="12"/><line x1="9" y1="16" x2="13" y2="16"/></svg></span>
+        <span class="sb-txt">Respostas</span>
+      </button>
+      <div class="sb-sub" id="sub-respostas" style="display:none">
+        <button class="sb-sub-link" onclick="exportarCSVRes()" data-tip="Exportar CSV">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> <span class="sb-txt">Exportar CSV</span>
+        </button>
+        <button class="sb-sub-link" onclick="window.print()" data-tip="Relatório PDF">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg> <span class="sb-txt">Relatório PDF</span>
+        </button>
+        <a class="sb-sub-link" href="../formulario_externo.html" target="_blank" data-tip="Nova Resposta">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> <span class="sb-txt">Nova Resposta</span>
+        </a>
+      </div>
 
+      <!-- Usuários (só admin) -->
+      <button class="sb-link" data-secao="admin" id="nav-admin-item"
+              onclick="navigate('admin')" style="display:none" data-tip="Usuários">
+        <span class="sb-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="9" cy="7" r="4"/><path d="M3 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/><line x1="19" y1="8" x2="19" y2="14" stroke-width="2"/><line x1="16" y1="11" x2="22" y2="11" stroke-width="2"/></svg></span>
+        <span class="sb-txt">Usuários</span>
+      </button>
 
     </nav>
 
-    <!-- Rodapé usuário -->
-    <div class="sidebar-footer">
-      <div class="sidebar-user">
-        <div class="sidebar-user-info">
-          <div style="display:flex;align-items:center;gap:6px">
-            <div class="sidebar-user-nome" id="nav-user-name2"></div>
-            <span class="sidebar-badge" id="nav-badge"></span>
-          </div>
-          <div class="sidebar-user-unidade" id="nav-user-unidade2"></div>
+    <!-- ── RODAPÉ: perfil + sair ── -->
+    <div class="sb-footer">
+      <div class="sb-user">
+        <div class="sb-avatar" id="sb-avatar">?</div>
+        <div class="sb-user-info">
+          <span class="sb-user-nome" id="nav-user-name2">…</span>
+          <span class="sb-user-badge" id="nav-badge"></span>
         </div>
       </div>
-      <button class="btn-sair" onclick="sair()">↩ Sair</button>
+      <button class="sb-sair" onclick="sair()" title="Sair" data-tip="Sair">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        <span class="sb-txt">Sair</span>
+      </button>
     </div>
 
   </aside>
