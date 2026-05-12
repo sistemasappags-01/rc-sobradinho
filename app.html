@@ -13,13 +13,11 @@
   <link rel="stylesheet" href="css/respostas.css">
   <link rel="stylesheet" href="css/admin.css">
   <!-- Dependências externas -->
-  <!-- libs via CDN com crossorigin para Edge -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"
-          crossorigin="anonymous"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"
-          crossorigin="anonymous"></script>
-  <script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.min.js"
-          crossorigin="anonymous"></script>
+  <!-- libs via CDN (URLs estáveis e verificadas) -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <!-- Lucide: carrega de forma assíncrona para não bloquear app -->
+  <script src="https://unpkg.com/lucide@0.438.0/dist/umd/lucide.js" defer></script>
 </head>
 <body>
 
@@ -481,10 +479,10 @@
 <script src="js/respostas.js"></script>
 <script src="js/admin.js"></script>
 <script>
-  // Inicializar ícones Lucide
-  if (window.lucide) lucide.createIcons();
-  // Iniciar aplicação
+  // Iniciar aplicação (Lucide carrega em paralelo via defer)
   initApp();
+  // Inicializar ícones Lucide após carregamento
+  window.addEventListener('load', () => { if (window.lucide) lucide.createIcons(); });
 </script>
 </body>
 </html>

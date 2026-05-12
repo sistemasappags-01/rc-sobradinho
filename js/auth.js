@@ -211,7 +211,7 @@ function navigate(secao, pushState = true) {
       case 'admin':     renderAdmin();     break;
 
     // Re-inicializar ícones Lucide após render
-    if (window.lucide) lucide.createIcons();
+    setTimeout(() => { try { if (window.lucide) lucide.createIcons(); } catch(e){} }, 50);
     }
 
     fecharMobileMenu();

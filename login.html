@@ -400,6 +400,9 @@
     document.getElementById('opc-escuro').classList.toggle('ativo', t==='escuro');
     localStorage.setItem('tema', t);
   }
+  // Ícones Lucide (carrega via defer)
+  window.addEventListener('load', () => { try { if (window.lucide) lucide.createIcons(); } catch(e){} });
+
   function toggleTema() {
     const atual = document.documentElement.getAttribute('data-tema') || 'escuro';
     setTema(atual==='claro' ? 'escuro' : 'claro');
