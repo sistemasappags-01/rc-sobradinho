@@ -294,3 +294,30 @@ function setEl(id, txt) {
   const el = document.getElementById(id);
   if (el) el.textContent = txt;
 }
+
+// ── Tooltips: click para mobile ──────────────────────────
+document.addEventListener('click', function(e) {
+  const ico = e.target.closest('.tooltip-ico');
+  if (ico) {
+    e.stopPropagation();
+    const wrap = ico.closest('.tooltip-wrap');
+    // Verificar se fica perto da borda direita
+    const rect = wrap.getBoundingClientRect();
+    if (rect.left + 130 > window.innerWidth - 20) {
+      wrap.classList.add('tooltip-esq');
+    } else {
+      wrap.classList.remove('tooltip-esq');
+    }
+    // Toggle ativo
+    const ativo = wrap.classList.toggle('ativo');
+    // Fechar outros abertos
+    document.querySelectorAll('.tooltip-wrap.ativo').forEach(w => {
+      if (w !== wrap) w.classList.remove('ativo');
+    });
+    return;
+  }
+  // Fechar qualquer tooltip aberto ao clicar fora
+  document.querySelectorAll('.tooltip-wrap.ativo').forEach(w => {
+    w.classList.remove('ativo');
+  });
+});

@@ -170,3 +170,93 @@ button { font-family: inherit; }
 /* ── Animações ── */
 @keyframes fadeIn { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
 .section > * { animation: fadeIn .25s ease both; }
+
+/* ══════════════════════════════════════════════════════
+   TOOLTIP DE AJUDA (ⓘ ao lado dos títulos)
+   Funciona em hover (desktop) e click (mobile/touch)
+══════════════════════════════════════════════════════ */
+.tooltip-wrap {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  vertical-align: middle;
+}
+
+.tooltip-ico {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px; height: 16px;
+  border-radius: 50%;
+  background: var(--border);
+  color: var(--tx3);
+  font-size: 10px;
+  font-weight: 700;
+  font-style: normal;
+  cursor: help;
+  margin-left: 5px;
+  transition: background .15s, color .15s;
+  user-select: none;
+  flex-shrink: 0;
+}
+
+.tooltip-ico:hover,
+.tooltip-wrap.ativo .tooltip-ico {
+  background: var(--navy);
+  color: #fff;
+}
+
+/* Caixa de tooltip */
+.tooltip-box {
+  display: none;
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 8px);
+  transform: translateX(-50%);
+  width: 260px;
+  background: var(--navy);
+  color: #fff;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 1.6;
+  padding: 10px 13px;
+  border-radius: 8px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.20);
+  z-index: 300;
+  pointer-events: none;
+  text-align: left;
+  white-space: normal;
+}
+
+/* Setinha */
+.tooltip-box::after {
+  content: '';
+  position: absolute;
+  top: 100%; left: 50%;
+  transform: translateX(-50%);
+  border: 5px solid transparent;
+  border-top-color: var(--navy);
+}
+
+/* Mostrar no hover (desktop) */
+.tooltip-wrap:hover .tooltip-box {
+  display: block;
+}
+
+/* Mostrar quando clicado (mobile) — classe toggled via JS */
+.tooltip-wrap.ativo .tooltip-box {
+  display: block;
+}
+
+/* Ajuste de posição quando próximo da borda direita */
+.tooltip-wrap.tooltip-esq .tooltip-box {
+  left: auto;
+  right: 0;
+  transform: none;
+}
+.tooltip-wrap.tooltip-esq .tooltip-box::after {
+  left: auto;
+  right: 10px;
+  transform: none;
+}
