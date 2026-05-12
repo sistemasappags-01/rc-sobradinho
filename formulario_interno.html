@@ -433,6 +433,19 @@
       .periodo-icone { font-size: 24px; }
     }
 
+  .emoji { font-size: 2rem; line-height: 1; display: block; }
+/* SVG faces */
+  .face-svg {
+    width: 44px;
+    height: 44px;
+    display: block;
+    margin: 0 auto 2px;
+    transition: transform .15s ease;
+  }
+  .face:hover .face-svg,
+  .face.selecionado .face-svg {
+    transform: scale(1.12);
+  }
   </style>
 </head>
 <body>
@@ -496,19 +509,19 @@
         <h3>🍽️ Qualidade da Refeição</h3>
         <div class="faces">
           <div class="face otimo"   onclick="selecionar(this,'refeicao','Ótima')">
-            <span class="emoji">😀</span><div class="estrelas"><span>★</span><span>★</span><span>★</span><span>★</span></div>
+            <svg class="face-svg" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="24" cy="24" r="22" fill="#dcfce7" stroke="#059669" stroke-width="2.5"/><circle cx="17" cy="19" r="2.5" fill="#059669"/><circle cx="31" cy="19" r="2.5" fill="#059669"/><path d="M14 28c1.5 5 8.5 8 10 8s8.5-3 10-8" stroke="#059669" stroke-width="2.5" stroke-linecap="round"/></svg><div class="estrelas"><span>★</span><span>★</span><span>★</span><span>★</span></div>
             <span class="label">Ótima</span><div class="checkbox-visual">( )</div>
           </div>
           <div class="face bom"     onclick="selecionar(this,'refeicao','Boa')">
-            <span class="emoji">🙂</span><div class="estrelas"><span>★</span><span>★</span><span>★</span></div>
+            <svg class="face-svg" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="24" cy="24" r="22" fill="#d1fae5" stroke="#10b981" stroke-width="2.5"/><circle cx="17" cy="20" r="2.5" fill="#10b981"/><circle cx="31" cy="20" r="2.5" fill="#10b981"/><path d="M16 29c1 3.5 6 6 8 6s7-2.5 8-6" stroke="#10b981" stroke-width="2.5" stroke-linecap="round"/></svg><div class="estrelas"><span>★</span><span>★</span><span>★</span></div>
             <span class="label">Boa</span><div class="checkbox-visual">( )</div>
           </div>
           <div class="face regular" onclick="selecionar(this,'refeicao','Regular')">
-            <span class="emoji">😐</span><div class="estrelas"><span>★</span><span>★</span></div>
+            <svg class="face-svg" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="24" cy="24" r="22" fill="#fef3c7" stroke="#d97706" stroke-width="2.5"/><circle cx="17" cy="20" r="2.5" fill="#d97706"/><circle cx="31" cy="20" r="2.5" fill="#d97706"/><line x1="16" y1="31" x2="32" y2="31" stroke="#d97706" stroke-width="2.5" stroke-linecap="round"/></svg><div class="estrelas"><span>★</span><span>★</span></div>
             <span class="label">Regular</span><div class="checkbox-visual">( )</div>
           </div>
           <div class="face ruim"    onclick="selecionar(this,'refeicao','Ruim')">
-            <span class="emoji">☹️</span><div class="estrelas"><span>★</span></div>
+            <svg class="face-svg" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="24" cy="24" r="22" fill="#fee2e2" stroke="#e11d48" stroke-width="2.5"/><circle cx="17" cy="19" r="2.5" fill="#e11d48"/><circle cx="31" cy="19" r="2.5" fill="#e11d48"/><path d="M16 33c1.5-4 6-6 8-6s6.5 2 8 6" stroke="#e11d48" stroke-width="2.5" stroke-linecap="round"/></svg><div class="estrelas"><span>★</span></div>
             <span class="label">Ruim</span><div class="checkbox-visual">( )</div>
           </div>
         </div>
@@ -518,19 +531,19 @@
         <h3>👋 Qualidade do Atendimento</h3>
         <div class="faces">
           <div class="face otimo"   onclick="selecionar(this,'atendimento','Ótimo')">
-            <span class="emoji">😀</span><div class="estrelas"><span>★</span><span>★</span><span>★</span><span>★</span></div>
+            <svg class="face-svg" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="24" cy="24" r="22" fill="#dcfce7" stroke="#059669" stroke-width="2.5"/><circle cx="17" cy="19" r="2.5" fill="#059669"/><circle cx="31" cy="19" r="2.5" fill="#059669"/><path d="M14 28c1.5 5 8.5 8 10 8s8.5-3 10-8" stroke="#059669" stroke-width="2.5" stroke-linecap="round"/></svg><div class="estrelas"><span>★</span><span>★</span><span>★</span><span>★</span></div>
             <span class="label">Ótimo</span><div class="checkbox-visual">( )</div>
           </div>
           <div class="face bom"     onclick="selecionar(this,'atendimento','Bom')">
-            <span class="emoji">🙂</span><div class="estrelas"><span>★</span><span>★</span><span>★</span></div>
+            <svg class="face-svg" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="24" cy="24" r="22" fill="#d1fae5" stroke="#10b981" stroke-width="2.5"/><circle cx="17" cy="20" r="2.5" fill="#10b981"/><circle cx="31" cy="20" r="2.5" fill="#10b981"/><path d="M16 29c1 3.5 6 6 8 6s7-2.5 8-6" stroke="#10b981" stroke-width="2.5" stroke-linecap="round"/></svg><div class="estrelas"><span>★</span><span>★</span><span>★</span></div>
             <span class="label">Bom</span><div class="checkbox-visual">( )</div>
           </div>
           <div class="face regular" onclick="selecionar(this,'atendimento','Regular')">
-            <span class="emoji">😐</span><div class="estrelas"><span>★</span><span>★</span></div>
+            <svg class="face-svg" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="24" cy="24" r="22" fill="#fef3c7" stroke="#d97706" stroke-width="2.5"/><circle cx="17" cy="20" r="2.5" fill="#d97706"/><circle cx="31" cy="20" r="2.5" fill="#d97706"/><line x1="16" y1="31" x2="32" y2="31" stroke="#d97706" stroke-width="2.5" stroke-linecap="round"/></svg><div class="estrelas"><span>★</span><span>★</span></div>
             <span class="label">Regular</span><div class="checkbox-visual">( )</div>
           </div>
           <div class="face ruim"    onclick="selecionar(this,'atendimento','Ruim')">
-            <span class="emoji">☹️</span><div class="estrelas"><span>★</span></div>
+            <svg class="face-svg" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="24" cy="24" r="22" fill="#fee2e2" stroke="#e11d48" stroke-width="2.5"/><circle cx="17" cy="19" r="2.5" fill="#e11d48"/><circle cx="31" cy="19" r="2.5" fill="#e11d48"/><path d="M16 33c1.5-4 6-6 8-6s6.5 2 8 6" stroke="#e11d48" stroke-width="2.5" stroke-linecap="round"/></svg><div class="estrelas"><span>★</span></div>
             <span class="label">Ruim</span><div class="checkbox-visual">( )</div>
           </div>
         </div>
@@ -540,19 +553,19 @@
         <h3>🧹 Limpeza e Organização do Ambiente</h3>
         <div class="faces">
           <div class="face otimo"   onclick="selecionar(this,'ambiente','Ótimo')">
-            <span class="emoji">😀</span><div class="estrelas"><span>★</span><span>★</span><span>★</span><span>★</span></div>
+            <svg class="face-svg" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="24" cy="24" r="22" fill="#dcfce7" stroke="#059669" stroke-width="2.5"/><circle cx="17" cy="19" r="2.5" fill="#059669"/><circle cx="31" cy="19" r="2.5" fill="#059669"/><path d="M14 28c1.5 5 8.5 8 10 8s8.5-3 10-8" stroke="#059669" stroke-width="2.5" stroke-linecap="round"/></svg><div class="estrelas"><span>★</span><span>★</span><span>★</span><span>★</span></div>
             <span class="label">Ótimo</span><div class="checkbox-visual">( )</div>
           </div>
           <div class="face bom"     onclick="selecionar(this,'ambiente','Bom')">
-            <span class="emoji">🙂</span><div class="estrelas"><span>★</span><span>★</span><span>★</span></div>
+            <svg class="face-svg" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="24" cy="24" r="22" fill="#d1fae5" stroke="#10b981" stroke-width="2.5"/><circle cx="17" cy="20" r="2.5" fill="#10b981"/><circle cx="31" cy="20" r="2.5" fill="#10b981"/><path d="M16 29c1 3.5 6 6 8 6s7-2.5 8-6" stroke="#10b981" stroke-width="2.5" stroke-linecap="round"/></svg><div class="estrelas"><span>★</span><span>★</span><span>★</span></div>
             <span class="label">Bom</span><div class="checkbox-visual">( )</div>
           </div>
           <div class="face regular" onclick="selecionar(this,'ambiente','Regular')">
-            <span class="emoji">😐</span><div class="estrelas"><span>★</span><span>★</span></div>
+            <svg class="face-svg" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="24" cy="24" r="22" fill="#fef3c7" stroke="#d97706" stroke-width="2.5"/><circle cx="17" cy="20" r="2.5" fill="#d97706"/><circle cx="31" cy="20" r="2.5" fill="#d97706"/><line x1="16" y1="31" x2="32" y2="31" stroke="#d97706" stroke-width="2.5" stroke-linecap="round"/></svg><div class="estrelas"><span>★</span><span>★</span></div>
             <span class="label">Regular</span><div class="checkbox-visual">( )</div>
           </div>
           <div class="face ruim"    onclick="selecionar(this,'ambiente','Ruim')">
-            <span class="emoji">☹️</span><div class="estrelas"><span>★</span></div>
+            <svg class="face-svg" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="24" cy="24" r="22" fill="#fee2e2" stroke="#e11d48" stroke-width="2.5"/><circle cx="17" cy="19" r="2.5" fill="#e11d48"/><circle cx="31" cy="19" r="2.5" fill="#e11d48"/><path d="M16 33c1.5-4 6-6 8-6s6.5 2 8 6" stroke="#e11d48" stroke-width="2.5" stroke-linecap="round"/></svg><div class="estrelas"><span>★</span></div>
             <span class="label">Ruim</span><div class="checkbox-visual">( )</div>
           </div>
         </div>
@@ -814,12 +827,13 @@
     };
 
     try {
-      // Usar o token do usuário autenticado (não o anon key)
+      // INSERT usa anon key — política RLS da tabela respostas permite inserts anônimos
+      // (autenticação é verificada no carregamento, não no insert)
       const resp = await fetch(`${SUPABASE_URL}/rest/v1/${TABELA}`, {
         method:  'POST',
         headers: {
           'apikey':        SUPABASE_KEY,
-          'Authorization': `Bearer ${_token}`,
+          'Authorization': `Bearer ${SUPABASE_KEY}`,
           'Content-Type':  'application/json',
           'Prefer':        'return=minimal',
         },
