@@ -351,7 +351,7 @@
         </div>
 
         <!-- Tabela + Análise -->
-        <div style="display:grid;grid-template-columns:1fr 320px;gap:14px;align-items:start" class="res-layout-grid">
+        <div class="res-layout-grid">
 
           <!-- Tabela -->
           <div class="card">
@@ -381,7 +381,7 @@
             <div class="card card-p">
               <div class="sec-title">Distribuição <span class="tooltip-wrap"><span class="tooltip-ico"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg></span><span class="tooltip-box">Proporção de cada nota (Ótimo, Bom, Regular, Ruim) sobre o total de notas válidas preenchidas nos registros filtrados. Campos em branco são ignorados.</span></span></div>
               <div style="display:flex;align-items:center;gap:12px">
-                <div class="donut-wrap" style="width:100px;height:100px;flex-shrink:0">
+                <div class="donut-wrap" style="width:120px;height:120px;flex-shrink:0">
                   <canvas id="res-chart-pizza"></canvas>
                   <div class="donut-center"><div class="donut-num" id="res-pizza-total">0</div><div class="donut-sub">Total</div></div>
                 </div>
@@ -392,7 +392,7 @@
             <div class="card card-p">
               <div class="sec-title">Por refeição <span class="tooltip-wrap"><span class="tooltip-ico"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg></span><span class="tooltip-box">Quantidade de avaliações por período do dia (Almoço, Café da Manhã, Jantar) nos registros filtrados. O total no centro é a soma dos três períodos.</span></span></div>
               <div style="display:flex;align-items:center;gap:12px">
-                <div class="donut-wrap" style="width:90px;height:90px;flex-shrink:0">
+                <div class="donut-wrap" style="width:110px;height:110px;flex-shrink:0">
                   <canvas id="res-chart-ref"></canvas>
                   <div class="donut-center"><div class="donut-num" id="res-ref-total">0</div><div class="donut-sub">Total</div></div>
                 </div>

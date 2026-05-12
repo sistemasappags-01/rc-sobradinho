@@ -80,21 +80,21 @@
 .btn-filtrar svg,
 .btn-limpar  svg { flex-shrink: 0; }
 
-/* ── Layout respostas: painel alinha em altura com a tabela ── */
+/* ── Layout respostas: grid tabela + painel sticky ── */
 .res-layout-grid {
-  align-items: stretch !important;
+  display: grid;
+  grid-template-columns: 1fr 310px;
+  gap: 16px;
+  align-items: start;
 }
 .res-painel-analise {
   display: flex;
   flex-direction: column;
   gap: 14px;
+  position: sticky;
+  top: 20px; /* distância do topo ao scrollar */
 }
-/* Último card (Médias) estica para preencher o espaço restante */
+/* Card Médias — tamanho natural, sem esticar */
 .res-card-medias {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-}
-.res-card-medias .medias-lista {
-  flex: 1;
+  /* natural height */
 }
