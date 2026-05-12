@@ -351,7 +351,7 @@
         </div>
 
         <!-- Tabela + Análise -->
-        <div style="display:grid;grid-template-columns:1fr 320px;gap:14px;align-items:start">
+        <div style="display:grid;grid-template-columns:1fr 320px;gap:14px;align-items:start" class="res-layout-grid">
 
           <!-- Tabela -->
           <div class="card">
@@ -376,7 +376,7 @@
           </div>
 
           <!-- Painel análise -->
-          <div style="display:flex;flex-direction:column;gap:14px">
+          <div class="res-painel-analise">
             <!-- Pizza distribuição -->
             <div class="card card-p">
               <div class="sec-title">Distribuição <span class="tooltip-wrap"><span class="tooltip-ico"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg></span><span class="tooltip-box">Proporção de cada nota (Ótimo, Bom, Regular, Ruim) sobre o total de notas válidas preenchidas nos registros filtrados. Campos em branco são ignorados.</span></span></div>
@@ -400,7 +400,7 @@
               </div>
             </div>
             <!-- Médias -->
-            <div class="card card-p">
+            <div class="card card-p res-card-medias">
               <div class="sec-title">Médias <span class="tooltip-wrap"><span class="tooltip-ico"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg></span><span class="tooltip-box">Média numérica (1 a 4) de cada categoria avaliada nos registros filtrados. Quanto mais próximo de 4, melhor a avaliação. Abaixo de 3,00 requer atenção.</span></span></div>
               <div class="medias-lista">
                 <div class="media-item"><span class="media-nome">Atendimento</span><span class="media-val"><span id="res-media-atend">—</span><span class="media-star">★</span></span></div>
