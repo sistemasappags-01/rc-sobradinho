@@ -206,11 +206,11 @@
         <!-- Evolução + Donut ref + Médias -->
         <div class="grid-524 mb12">
           <div class="card card-p">
-            <div class="sec-title">Evolução da satisfação <span class="tooltip-wrap"><span class="tooltip-ico">ⓘ</span><span class="tooltip-box">Mostra como o percentual de avaliações positivas (Ótimo + Bom) e a média geral variaram dia a dia no período selecionado. Identifica tendências de melhora ou queda ao longo do tempo.</span></span></div>
+            <div class="sec-title">Evolução da satisfação <span class="tooltip-wrap"><span class="tooltip-ico"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg></span><span class="tooltip-box">Mostra como o percentual de avaliações positivas (Ótimo + Bom) e a média geral variaram dia a dia no período selecionado. Identifica tendências de melhora ou queda ao longo do tempo.</span></span></div>
             <div style="position:relative;height:190px"><canvas id="dash-chart-evolucao"></canvas></div>
           </div>
           <div class="card card-p">
-            <div class="sec-title">Por refeição <span class="tooltip-wrap"><span class="tooltip-ico">ⓘ</span><span class="tooltip-box">Quantidade de avaliações por período do dia nos registros filtrados. O total no centro é a soma dos três períodos com registro válido.</span></span></div>
+            <div class="sec-title">Por refeição <span class="tooltip-wrap"><span class="tooltip-ico"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg></span><span class="tooltip-box">Quantidade de avaliações por período do dia nos registros filtrados. O total no centro é a soma dos três períodos com registro válido.</span></span></div>
             <div style="display:flex;align-items:center;gap:14px">
               <div class="donut-wrap" style="width:110px;height:110px;flex-shrink:0">
                 <canvas id="dash-chart-ref"></canvas>
@@ -220,7 +220,7 @@
             </div>
           </div>
           <div class="card card-p">
-            <div class="sec-title">Média por categoria <span class="tooltip-wrap"><span class="tooltip-ico">ⓘ</span><span class="tooltip-box">Média numérica (escala 1 = Ruim a 4 = Ótimo) para cada categoria: Atendimento, Ambiente e Refeição. Permite comparar qual aspecto tem melhor ou pior desempenho no período.</span></span></div>
+            <div class="sec-title">Média por categoria <span class="tooltip-wrap"><span class="tooltip-ico"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg></span><span class="tooltip-box">Média numérica (escala 1 = Ruim a 4 = Ótimo) para cada categoria: Atendimento, Ambiente e Refeição. Permite comparar qual aspecto tem melhor ou pior desempenho no período.</span></span></div>
             <div class="cat-lista" id="dash-cat-lista"></div>
             <div class="cat-escala">Escala: 1 (Ruim) a 4 (Ótimo)</div>
           </div>
@@ -229,7 +229,7 @@
         <!-- Distribuição + Neg/dia + Período + Top obs -->
         <div class="grid-2224 mb12">
           <div class="card card-p">
-            <div class="sec-title">Distribuição <span class="tooltip-wrap"><span class="tooltip-ico">ⓘ</span><span class="tooltip-box">Proporção de cada nota (Ótimo, Bom, Regular, Ruim) considerando todos os campos válidos preenchidos nos registros filtrados. Campos em branco são ignorados no cálculo.</span></span></div>
+            <div class="sec-title">Distribuição <span class="tooltip-wrap"><span class="tooltip-ico"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg></span><span class="tooltip-box">Proporção de cada nota (Ótimo, Bom, Regular, Ruim) considerando todos os campos válidos preenchidos nos registros filtrados. Campos em branco são ignorados no cálculo.</span></span></div>
             <div style="display:flex;align-items:center;gap:12px">
               <div class="donut-wrap" style="width:100px;height:100px;flex-shrink:0">
                 <canvas id="dash-chart-distrib"></canvas>
@@ -239,16 +239,16 @@
             </div>
           </div>
           <div class="card card-p">
-            <div class="sec-title">Negativas por dia <span class="tooltip-wrap"><span class="tooltip-ico">ⓘ</span><span class="tooltip-box">Quantidade de notas "Ruim" registradas em cada dia do período. Picos no gráfico indicam dias com problemas específicos que merecem investigação.</span></span></div>
+            <div class="sec-title">Negativas por dia <span class="tooltip-wrap"><span class="tooltip-ico"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg></span><span class="tooltip-box">Quantidade de notas "Ruim" registradas em cada dia do período. Picos no gráfico indicam dias com problemas específicos que merecem investigação.</span></span></div>
             <div style="position:relative;height:120px"><canvas id="dash-chart-neg-dia"></canvas></div>
           </div>
           <div class="card card-p">
-            <div class="sec-title">Por período <span class="tooltip-wrap"><span class="tooltip-ico">ⓘ</span><span class="tooltip-box">Distribuição das avaliações por turno do dia (Manhã, Tarde, Noite). Ajuda a identificar em qual horário o restaurante recebe mais ou menos participação.</span></span></div>
+            <div class="sec-title">Por período <span class="tooltip-wrap"><span class="tooltip-ico"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg></span><span class="tooltip-box">Distribuição das avaliações por turno do dia (Manhã, Tarde, Noite). Ajuda a identificar em qual horário o restaurante recebe mais ou menos participação.</span></span></div>
             <div class="per-lista" id="dash-per-lista"></div>
           </div>
           <div class="card card-p">
             <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
-              <div class="sec-title" style="margin:0">Top observações <span class="tooltip-wrap"><span class="tooltip-ico">ⓘ</span><span class="tooltip-box">Palavras mais frequentes nos textos de observações dos comensais. Revela os temas mais citados — positivos ou negativos — no feedback qualitativo.</span></span></div>
+              <div class="sec-title" style="margin:0">Top observações <span class="tooltip-wrap"><span class="tooltip-ico"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg></span><span class="tooltip-box">Palavras mais frequentes nos textos de observações dos comensais. Revela os temas mais citados — positivos ou negativos — no feedback qualitativo.</span></span></div>
               <span style="font-size:11px;color:var(--tx3)">Freq.</span>
             </div>
             <div class="obs-lista" id="dash-obs-lista"></div>
@@ -378,7 +378,7 @@
           <div style="display:flex;flex-direction:column;gap:14px">
             <!-- Pizza distribuição -->
             <div class="card card-p">
-              <div class="sec-title">Distribuição</div>
+              <div class="sec-title">Distribuição <span class="tooltip-wrap"><span class="tooltip-ico"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg></span><span class="tooltip-box">Proporção de cada nota (Ótimo, Bom, Regular, Ruim) sobre o total de notas válidas preenchidas nos registros filtrados. Campos em branco são ignorados.</span></span></div>
               <div style="display:flex;align-items:center;gap:12px">
                 <div class="donut-wrap" style="width:100px;height:100px;flex-shrink:0">
                   <canvas id="res-chart-pizza"></canvas>
@@ -389,7 +389,7 @@
             </div>
             <!-- Donut por refeição -->
             <div class="card card-p">
-              <div class="sec-title">Por refeição</div>
+              <div class="sec-title">Por refeição <span class="tooltip-wrap"><span class="tooltip-ico"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg></span><span class="tooltip-box">Quantidade de avaliações por período do dia (Almoço, Café da Manhã, Jantar) nos registros filtrados. O total no centro é a soma dos três períodos.</span></span></div>
               <div style="display:flex;align-items:center;gap:12px">
                 <div class="donut-wrap" style="width:90px;height:90px;flex-shrink:0">
                   <canvas id="res-chart-ref"></canvas>
@@ -400,7 +400,7 @@
             </div>
             <!-- Médias -->
             <div class="card card-p">
-              <div class="sec-title">Médias <span class="tooltip-wrap"><span class="tooltip-ico">ⓘ</span><span class="tooltip-box">Média numérica (1 a 4) de cada categoria avaliada nos registros filtrados. Quanto mais próximo de 4, melhor a avaliação. Abaixo de 3,00 requer atenção.</span></span></div>
+              <div class="sec-title">Médias <span class="tooltip-wrap"><span class="tooltip-ico"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg></span><span class="tooltip-box">Média numérica (1 a 4) de cada categoria avaliada nos registros filtrados. Quanto mais próximo de 4, melhor a avaliação. Abaixo de 3,00 requer atenção.</span></span></div>
               <div class="medias-lista">
                 <div class="media-item"><span class="media-nome">Atendimento</span><span class="media-val"><span id="res-media-atend">—</span><span class="media-star">★</span></span></div>
                 <div class="media-item"><span class="media-nome">Ambiente</span><span class="media-val"><span id="res-media-amb">—</span><span class="media-star">★</span></span></div>
