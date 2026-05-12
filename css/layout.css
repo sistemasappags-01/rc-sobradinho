@@ -99,6 +99,15 @@
   display: flex; align-items: center; justify-content: center;
   color: var(--tx3); transition: color .12s;
 }
+/* Lucide icons na sidebar */
+.sb-icon i[data-lucide],
+.sb-icon svg { width: 18px; height: 18px; stroke: currentColor; }
+.sb-sub-link i[data-lucide],
+.sb-sub-link svg { width: 14px; height: 14px; stroke: currentColor; }
+.sb-sair i[data-lucide],
+.sb-sair svg { width: 15px; height: 15px; stroke: currentColor; }
+.sb-toggle i[data-lucide],
+.sb-toggle svg { width: 18px; height: 18px; stroke: currentColor; }
 .sb-link:hover .sb-icon { color: var(--tx1); }
 
 /* Tooltip quando colapsado */

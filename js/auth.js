@@ -13,7 +13,20 @@ async function initApp() {
   if (_iniciando) return;
   _iniciando = true;
 
-  STATE.sb = supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_KEY);
+  // Criar cliente Supabase com storage personalizado
+  // (funciona mesmo quando Edge bloqueia localStorage de terceiros)
+  const supabaseStorage = {
+    getItem:    (k) => STORE.get(k),
+    setItem:    (k, v) => STORE.set(k, v),
+    removeItem: (k) => STORE.remove(k),
+  };
+  STATE.sb = supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_KEY, {
+    auth: {
+      storage: supabaseStorage,
+      persistSession: _storageOk, // só persiste se localStorage disponível
+      autoRefreshToken: true,
+    }
+  });
 
   showOverlay('Verificando acesso\u2026');
 
@@ -196,6 +209,9 @@ function navigate(secao, pushState = true) {
       case 'dashboard': renderDashboard(); break;
       case 'respostas': renderRespostas(); break;
       case 'admin':     renderAdmin();     break;
+
+    // Re-inicializar ícones Lucide após render
+    if (window.lucide) lucide.createIcons();
     }
 
     fecharMobileMenu();
@@ -279,12 +295,12 @@ function toggleSidebar() {
   const content  = document.querySelector('.content');
   const colapsada = sidebar?.classList.toggle('colapsada');
   if (content) content.style.marginLeft = colapsada ? '64px' : '220px';
-  localStorage.setItem('sidebar-colapsada', colapsada ? '1' : '0');
+  STORE.set('sidebar-colapsada', colapsada ? '1' : '0');
 }
 
 // Restaurar estado da sidebar
 document.addEventListener('DOMContentLoaded', function () {
-  if (localStorage.getItem('sidebar-colapsada') === '1') {
+  if (STORE.get('sidebar-colapsada') === '1') {
     const sidebar = document.getElementById('sidebar');
     const content = document.querySelector('.content');
     sidebar?.classList.add('colapsada');

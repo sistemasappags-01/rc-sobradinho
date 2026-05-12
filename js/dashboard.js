@@ -144,10 +144,6 @@ function renderEvolucao(d) {
     return;
   }
 
-  canvas.style.width  = '100%';
-  canvas.style.height = '190px';
-  canvas.width  = canvas.parentElement?.offsetWidth  || 500;
-  canvas.height = 190;
   CHARTS.evolucao = new Chart(canvas.getContext('2d'), {
     type: 'line',
     data: { labels, datasets: [
@@ -159,7 +155,7 @@ function renderEvolucao(d) {
         borderDash:[4,3], tension:0.4, pointRadius:3, pointBackgroundColor:'#1a3a6e', yAxisID:'y2' }
     ] },
     options: {
-      responsive:false, maintainAspectRatio:false,
+      responsive:true, maintainAspectRatio:false,
       animation: false,
       interaction:{ mode:'index', intersect:false },
       plugins:{ legend:{ display:true, position:'top',
@@ -201,7 +197,7 @@ function renderDonutRef(d) {
       data:{ datasets:[{ data:dados,
         backgroundColor:['#2563eb','#ea580c','#7c3aed'],
         borderWidth:2, borderColor:'#fff', hoverOffset:4 }] },
-      options:{ responsive:false, maintainAspectRatio:false, cutout:'65%',
+      options:{ responsive:true, maintainAspectRatio:false, cutout:'65%',
       animation: false,
         plugins:{ legend:{display:false} } }
     });
@@ -263,7 +259,7 @@ function renderDistrib(d) {
       data:{ datasets:[{ data:dados,
         backgroundColor:['#059669','#10b981','#d97706','#e11d48'],
         borderWidth:2, borderColor:'#fff', hoverOffset:3 }] },
-      options:{ responsive:false, maintainAspectRatio:false, cutout:'62%',
+      options:{ responsive:true, maintainAspectRatio:false, cutout:'62%',
       animation: false,
         plugins:{ legend:{display:false} } }
     });
@@ -307,7 +303,7 @@ function renderNegDia(d) {
       borderColor:'#e11d48', backgroundColor:'#e11d4822',
       borderWidth:2, fill:true, tension:0.4, pointRadius:3,
       pointBackgroundColor:'#e11d48' }] },
-    options:{ responsive:false, maintainAspectRatio:false,
+    options:{ responsive:true, maintainAspectRatio:false,
       animation: false,
       plugins:{ legend:{display:false} },
       scales:{
