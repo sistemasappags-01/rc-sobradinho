@@ -41,6 +41,7 @@ async function initApp() {
 
   // Carregar dados e navegar
   await carregarTodosOsDados();
+  atualizarTagHora(); // hora da carga inicial
   const hash = location.hash.replace('#', '') || 'dashboard';
   navigate(hash, false);
 
@@ -157,6 +158,7 @@ async function atualizarDadosSilencioso() {
     }
 
     // Indicação visual sutil de que os dados foram atualizados
+    atualizarTagHora();
     const tag = document.getElementById('tag-periodo-desk');
     if (tag) { tag.style.opacity='0.4'; setTimeout(()=>{tag.style.opacity='1';}, 500); }
     const btn = document.getElementById('btn-refresh');
@@ -335,6 +337,15 @@ document.addEventListener('click', function(e) {
   });
 });
 
+
+// ── Atualizar tag de última atualização ─────────────────
+function atualizarTagHora() {
+  const tag = document.getElementById('tag-atualizacao');
+  if (!tag) return;
+  const agora = new Date();
+  const hora  = agora.toLocaleTimeString('pt-BR', { hour:'2-digit', minute:'2-digit' });
+  tag.textContent = 'Atualizado às ' + hora;
+}
 // ── Atualizar dados manualmente ──────────────────────────
 async function atualizarManual() {
   const btn = document.getElementById('btn-refresh');
@@ -347,6 +358,7 @@ async function atualizarManual() {
     case 'dashboard': renderDashboard(); break;
     case 'respostas': aplicarFiltrosRes(); break;
   }
+  atualizarTagHora();
   if (btn) {
     btn.disabled = false;
     btn.classList.remove('refresh-spin');
