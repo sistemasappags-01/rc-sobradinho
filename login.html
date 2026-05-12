@@ -303,7 +303,7 @@
       <div class="campo-grupo">
         <label for="email">E-mail</label>
         <div class="campo-wrap">
-          <span class="campo-ico"><i data-lucide="mail" style="width:16px;height:16px;stroke:var(--tx3)"></i></span>
+          <span class="campo-ico"><svg style="width:16px;height:16px;stroke:var(--tx3)" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,12 2,6"/></svg></span>
           <input type="email" id="email" placeholder="seu@email.com"
                  autocomplete="email" onkeydown="if(event.key==='Enter')focarSenha()">
         </div>
@@ -313,7 +313,7 @@
       <div class="campo-grupo">
         <label for="senha">Senha</label>
         <div class="campo-wrap">
-          <span class="campo-ico"><i data-lucide="lock" style="width:16px;height:16px;stroke:var(--tx3)"></i></span>
+          <span class="campo-ico"><svg style="width:16px;height:16px;stroke:var(--tx3)" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></span>
           <input type="password" id="senha" placeholder="Sua senha"
                  autocomplete="current-password"
                  onkeydown="if(event.key==='Enter')entrar()">
@@ -362,7 +362,7 @@
       <div class="campo-grupo">
         <label for="email-rec">E-mail cadastrado</label>
         <div class="campo-wrap">
-          <span class="campo-ico"><i data-lucide="mail" style="width:16px;height:16px;stroke:var(--tx3)"></i></span>
+          <span class="campo-ico"><svg style="width:16px;height:16px;stroke:var(--tx3)" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,12 2,6"/></svg></span>
           <input type="email" id="email-rec" placeholder="seu@email.com"
                  onkeydown="if(event.key==='Enter')recuperar()">
         </div>
@@ -400,9 +400,6 @@
     document.getElementById('opc-escuro').classList.toggle('ativo', t==='escuro');
     localStorage.setItem('tema', t);
   }
-  // Ícones Lucide (carrega via defer)
-  window.addEventListener('load', () => { try { if (window.lucide) lucide.createIcons(); } catch(e){} });
-
   function toggleTema() {
     const atual = document.documentElement.getAttribute('data-tema') || 'escuro';
     setTema(atual==='claro' ? 'escuro' : 'claro');

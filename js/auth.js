@@ -240,9 +240,6 @@ async function navigate(secao, pushState = true) {
       case 'admin':     renderAdmin();     break;
     }
 
-    // Ícones Lucide
-    setTimeout(() => { try { if (window.lucide) lucide.createIcons(); } catch(e){} }, 50);
-
     fecharMobileMenu();
 
   } finally {
