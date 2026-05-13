@@ -396,3 +396,45 @@
   font-size: 12.5px;
   color: var(--tx3);
 }
+
+/* ── Título de página com traço dourado (padrão sec-title) ── */
+.sec-page-titulo { }
+
+.sec-h1-bar {
+  font-family: 'Sora', sans-serif;
+  font-size: 22px; font-weight: 800;
+  color: var(--tx1); letter-spacing: -.4px;
+  display: flex; align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+/* Traço dourado antes do título — igual ao .sec-title::before */
+.sec-h1-bar::before {
+  content: '';
+  display: block;
+  width: 4px; height: 22px;
+  background: var(--gold);
+  border-radius: 99px;
+  flex-shrink: 0;
+}
+
+.sec-h1-bar svg {
+  width: 18px; height: 18px;
+  stroke: var(--tx2);
+  flex-shrink: 0;
+}
+
+/* Filtros — sec-title sem margin-bottom grande */
+.sec-filtros-title {
+  margin-bottom: 12px !important;
+  font-size: 11px !important;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--tx2) !important;
+}
+
+.sec-filtros-title svg {
+  width: 13px; height: 13px;
+  stroke: var(--tx2);
+}
