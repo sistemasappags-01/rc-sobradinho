@@ -101,9 +101,29 @@
 
 /* ── Controle de acesso por perfil ── */
 
-/* Coluna Nome completamente oculta para visualizador */
+/* Dado restrito — exibido para visualizador */
+.res-dado-restrito {
+  font-style: italic;
+  color: var(--tx3);
+  font-size: 11px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.res-dado-restrito::before {
+  content: '';
+  display: inline-block;
+  width: 12px; height: 12px;
+  background: var(--border);
+  border-radius: 3px;
+  vertical-align: middle;
+  flex-shrink: 0;
+}
+
+/* Coluna restrita para perfil visualizador */
 .perfil-visualizador .col-restrito {
-  display: none !important;
+  opacity: 0.5;
+  pointer-events: none;
 }
 
 /* ══════════════════════════════════════════════

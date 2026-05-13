@@ -1,21 +1,8 @@
 // ═══════════════════════════════════════════════════════════
-//  auth.js — Autenticação + Roteador SPA + Políticas de perfil
-//
-//  TABELA DE POLÍTICAS
-//  ┌─────────────────────────────┬─────────────┬────────┬───────┐
-//  │ Recurso                     │visualizador │ gestor │ admin │
-//  ├─────────────────────────────┼─────────────┼────────┼───────┤
-//  │ Dashboard (ver)             │     ✅       │   ✅   │  ✅   │
-//  │ Dashboard CSV / PDF         │     ❌       │   ✅   │  ✅   │
-//  │ Respostas (ver)             │  ✅ s/nome   │   ✅   │  ✅   │
-//  │ Respostas CSV / PDF         │     ❌       │   ✅   │  ✅   │
-//  │ Nova Resposta               │     ❌       │   ✅   │  ✅   │
-//  │ Nome / Telefone             │     ❌       │   ✅   │  ✅   │
-//  │ Sidebar subitens            │     ❌       │   ✅   │  ✅   │
-//  │ Seção Usuários              │     ❌       │   ❌   │  ✅   │
-//  └─────────────────────────────┴─────────────┴────────┴───────┘
+//  auth.js — Autenticação + Roteador SPA
 // ═══════════════════════════════════════════════════════════
 
+// Flags de controle
 let _iniciando  = false;
 let _carregando = false;
 let _navegando  = false;
@@ -27,6 +14,7 @@ async function initApp() {
 
   showOverlay('Verificando acesso…');
 
+  // Inicializar Supabase — simples e confiável
   if (!window.supabase) {
     showOverlay('❌ Biblioteca não carregou. Recarregue a página.', true);
     return;
@@ -34,9 +22,11 @@ async function initApp() {
 
   STATE.sb = supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_KEY);
 
+  // Verificar autenticação
   const ok = await checkAuth();
   if (!ok) return;
 
+  // Mostrar layout
   hideOverlay();
   const layout = document.getElementById('app-layout');
   if (layout) layout.style.display = 'flex';
@@ -49,14 +39,16 @@ async function initApp() {
     if (content) content.style.marginLeft = '64px';
   }
 
+  // Carregar dados e navegar
   await carregarTodosOsDados();
-  atualizarTagHora();
-
+  atualizarTagHora(); // hora da carga inicial
   const hash = location.hash.replace('#', '') || 'dashboard';
   navigate(hash, false);
 
+  // Auto-refresh silencioso a cada 5 minutos
   setInterval(atualizarDadosSilencioso, CONFIG.REFRESH_INTERVAL_MS);
 
+  // Suporte ao botão voltar/avançar
   window.addEventListener('popstate', () => {
     navigate(location.hash.replace('#', '') || 'dashboard', false);
   });
@@ -71,12 +63,15 @@ async function checkAuth() {
     session = data?.session ?? null;
   } catch(e) {
     showOverlay('❌ Erro de conexão.<br><small>' + e.message + '</small>', true);
-    const btn = document.getElementById('overlay-btn');
-    if (btn) { btn.style.display = 'inline-block'; btn.onclick = () => location.reload(); }
+    document.getElementById('overlay-btn').style.display = 'inline-block';
+    document.getElementById('overlay-btn').onclick = () => location.reload();
     return false;
   }
 
-  if (!session) { location.href = 'login.html'; return false; }
+  if (!session) {
+    location.href = 'login.html';
+    return false;
+  }
 
   STATE.token = session.access_token;
 
@@ -92,13 +87,11 @@ async function checkAuth() {
   }
 
   if (!perfil) {
-    showOverlay('⚠️ Perfil não encontrado.', true);
+    showOverlay('⚠️ Perfil não encontrado.<br><small>ID: ' + session.user.id + '</small>', true);
     const btn = document.getElementById('overlay-btn');
-    if (btn) {
-      btn.style.display = 'inline-block';
-      btn.textContent = 'Voltar ao login';
-      btn.onclick = async () => { await STATE.sb.auth.signOut(); location.href = 'login.html'; };
-    }
+    btn.style.display = 'inline-block';
+    btn.textContent = '🔐 Voltar ao login';
+    btn.onclick = async () => { await STATE.sb.auth.signOut(); location.href = 'login.html'; };
     return false;
   }
 
@@ -109,70 +102,45 @@ async function checkAuth() {
   }
 
   STATE.perfil = perfil;
-  aplicarPoliticasPerfil();
   renderNav();
   return true;
-}
-
-// ── Políticas de acesso por perfil ──────────────────────
-function aplicarPoliticasPerfil() {
-  const perfil = STATE.perfil?.perfil || 'visualizador';
-
-  // ── REGRAS POR PERFIL ─────────────────────────────────
-  const PODE_EXPORTAR    = ['gestor', 'admin'].includes(perfil);
-  const PODE_NOVA_RESP   = ['gestor', 'admin'].includes(perfil);
-  const PODE_VER_NOMES   = ['gestor', 'admin'].includes(perfil);
-  const PODE_ADMIN       = perfil === 'admin';
-  const PODE_SUBITENS    = ['gestor', 'admin'].includes(perfil);
-
-  // ── 1. Marcar body com classe de perfil ───────────────
-  document.body.classList.remove('perfil-visualizador', 'perfil-gestor', 'perfil-admin');
-  document.body.classList.add('perfil-' + perfil);
-
-  // ── 2. Botões Dashboard (CSV + PDF) ───────────────────
-  ['dash-btn-csv', 'dash-btn-pdf'].forEach(id => {
-    const el = document.getElementById(id);
-    if (!el) return;
-    el.style.display = PODE_EXPORTAR ? '' : 'none';
-  });
-
-  // ── 3. Botões Respostas (CSV + PDF + Nova resposta) ───
-  ['res-btn-csv', 'res-btn-pdf'].forEach(id => {
-    const el = document.getElementById(id);
-    if (!el) return;
-    el.style.display = PODE_EXPORTAR ? '' : 'none';
-  });
-  const novaBtn = document.getElementById('res-btn-nova');
-  if (novaBtn) novaBtn.style.display = PODE_NOVA_RESP ? '' : 'none';
-
-  // ── 4. Sidebar subitens (CSV/PDF/Nova em cada seção) ──
-  const subDash = document.getElementById('sub-dashboard');
-  const subRes  = document.getElementById('sub-respostas');
-  if (subDash) subDash.style.display = PODE_SUBITENS ? '' : 'none';
-  // sub-respostas começa oculto e é mostrado pelo navigate() —
-  // para visualizador garantir que nunca aparece
-  if (subRes && !PODE_SUBITENS) subRes.style.setProperty('display','none','important');
-
-  // ── 5. Seção Usuários na sidebar ──────────────────────
-  const navAdmin = document.getElementById('nav-admin-item');
-  if (navAdmin) navAdmin.style.display = PODE_ADMIN ? 'flex' : 'none';
-
-  // ── 6. Nome/telefone — CSS class no body ──────────────
-  // respostas.js lê document.body.classList.contains('perfil-visualizador')
-  // para mascarar os dados nas linhas da tabela e no modal
 }
 
 // ── Renderizar nav com dados do usuário ──────────────────
 function renderNav() {
   const p = STATE.perfil;
+
+  // Rodapé sidebar — dados do usuário
   setEl('nav-user-name',    p.nome);
   setEl('nav-user-unidade', p.unidade || CONFIG.UNIDADE_PADRAO);
   setEl('nav-badge',        p.perfil.toUpperCase());
 
+  // Avatar com iniciais
   const iniciais = p.nome.split(' ')
     .filter(s => s.length > 0).slice(0, 2)
     .map(s => s[0].toUpperCase()).join('');
   setEl('sb-avatar', iniciais || '?');
+
+  // Admin: mostrar item Usuários
+  if (p.perfil === 'admin') {
+    const el = document.getElementById('nav-admin-item');
+    if (el) el.style.display = 'flex';
+  }
+
+  // Visualizador: ocultar botões restritos e sinalizar para a tabela
+  if (p.perfil === 'visualizador') {
+    // Ocultar botões do cabeçalho
+    document.querySelectorAll('.res-btn-restrito').forEach(el => {
+      el.style.display = 'none';
+    });
+    // Ocultar subitens da sidebar (CSV, PDF, Nova Resposta)
+    const subDash = document.getElementById('sub-dashboard');
+    const subRes  = document.getElementById('sub-respostas');
+    if (subDash) subDash.style.display = 'none';
+    if (subRes)  subRes.style.display  = 'none';
+    // Marcar o body para CSS controlar visibilidade
+    document.body.classList.add('perfil-visualizador');
+  }
 }
 
 // ── Carregar dados do banco ──────────────────────────────
@@ -190,7 +158,7 @@ async function carregarTodosOsDados() {
   }
 }
 
-// ── Refresh silencioso ───────────────────────────────────
+// ── Refresh silencioso (sem re-render de charts) ─────────
 async function atualizarDadosSilencioso() {
   if (_carregando || _navegando) return;
   try {
@@ -198,46 +166,25 @@ async function atualizarDadosSilencioso() {
     STATE.dados = Array.isArray(rows) ? rows : [];
     calcularPeriodos();
 
+    // Re-renderizar a seção ativa sem animações
     switch (STATE.secao) {
       case 'dashboard': renderDashboard(); break;
       case 'respostas': aplicarFiltrosRes(); break;
     }
 
+    // Indicação visual sutil de que os dados foram atualizados
     atualizarTagHora();
     const tag = document.getElementById('tag-periodo-desk');
-    if (tag) { tag.style.opacity = '0.4'; setTimeout(() => { tag.style.opacity = '1'; }, 500); }
+    if (tag) { tag.style.opacity='0.4'; setTimeout(()=>{tag.style.opacity='1';}, 500); }
     const btn = document.getElementById('btn-refresh');
-    if (btn) { btn.classList.add('refresh-ok'); setTimeout(() => btn.classList.remove('refresh-ok'), 1500); }
-    console.log('[auto-refresh]', STATE.dados.length, 'registros');
+    if (btn) {
+      btn.classList.add('refresh-ok');
+      setTimeout(() => btn.classList.remove('refresh-ok'), 1500);
+    }
+    console.log('[auto-refresh] dados atualizados —', STATE.dados.length, 'registros');
   } catch(e) {
     console.warn('[auto-refresh] falhou:', e.message);
   }
-}
-
-// ── Atualizar manualmente ────────────────────────────────
-async function atualizarManual() {
-  const btn = document.getElementById('btn-refresh');
-  if (btn) { btn.disabled = true; btn.classList.add('refresh-spin'); }
-  await carregarTodosOsDados();
-  switch (STATE.secao) {
-    case 'dashboard': renderDashboard(); break;
-    case 'respostas': aplicarFiltrosRes(); break;
-  }
-  atualizarTagHora();
-  if (btn) {
-    btn.disabled = false;
-    btn.classList.remove('refresh-spin');
-    btn.classList.add('refresh-ok');
-    setTimeout(() => btn.classList.remove('refresh-ok'), 1500);
-  }
-}
-
-// ── Tag de hora da atualização ───────────────────────────
-function atualizarTagHora() {
-  const tag = document.getElementById('tag-atualizacao');
-  if (!tag) return;
-  const hora = new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
-  tag.textContent = ' · Atualizado às ' + hora;
 }
 
 // ── Calcular períodos atual e anterior ──────────────────
@@ -259,8 +206,9 @@ function calcularPeriodos() {
     return d >= iniAntStr && d < iniAtStr;
   });
 
-  const fmt = d => d.toLocaleDateString('pt-BR', { day:'2-digit', month:'2-digit', year:'numeric' });
-  const txt = fmt(iniAt) + ' – ' + fmt(hoje);
+  // Atualizar tags de período
+  const txt = iniAt.toLocaleDateString('pt-BR', {day:'2-digit',month:'2-digit',year:'numeric'})
+    + ' – ' + hoje.toLocaleDateString('pt-BR', {day:'2-digit',month:'2-digit',year:'numeric'});
   ['tag-periodo', 'tag-periodo-desk'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.textContent = txt;
@@ -283,18 +231,17 @@ const SECOES = ['dashboard', 'respostas', 'admin'];
 async function navigate(secao, pushState = true) {
   if (_navegando) return;
   if (!SECOES.includes(secao)) secao = 'dashboard';
-
-  // Redirecionar se perfil não tem acesso
-  const perfil = STATE.perfil?.perfil || 'visualizador';
-  if (secao === 'admin' && perfil !== 'admin') secao = 'dashboard';
+  if (secao === 'admin' && STATE.perfil?.perfil !== 'admin') secao = 'dashboard';
 
   _navegando = true;
   STATE.secao = secao;
 
   try {
-    const titulos = { dashboard: 'Dashboard', respostas: 'Respostas', admin: 'Usuários' };
+    // Atualizar título topbar mobile
+    const titulos = { dashboard:'Dashboard', respostas:'Respostas', admin:'Usuários' };
     setEl('topbar-titulo', titulos[secao] || 'Dashboard');
 
+    // Mostrar/ocultar seções
     SECOES.forEach(id => {
       const el = document.getElementById('sec-' + id);
       if (el) el.style.display = 'none';
@@ -302,24 +249,21 @@ async function navigate(secao, pushState = true) {
     const target = document.getElementById('sec-' + secao);
     if (target) target.style.display = 'block';
 
+    // Atualizar link ativo
     document.querySelectorAll('.sb-link[data-secao]').forEach(link => {
       link.classList.toggle('ativo', link.dataset.secao === secao);
     });
 
-    // Subitens da sidebar — respeitar política de perfil
-    const podeSub = ['gestor', 'admin'].includes(perfil);
+    // Subitens: mostrar só os da seção ativa
     ['dashboard', 'respostas'].forEach(id => {
       const sub = document.getElementById('sub-' + id);
-      if (!sub) return;
-      if (!podeSub) {
-        sub.style.setProperty('display', 'none', 'important');
-      } else {
-        sub.style.display = id === secao ? 'block' : 'none';
-      }
+      if (sub) sub.style.display = id === secao ? 'block' : 'none';
     });
 
+    // Atualizar URL
     if (pushState) history.pushState(null, '', '#' + secao);
 
+    // Renderizar conteúdo
     switch (secao) {
       case 'dashboard': renderDashboard(); break;
       case 'respostas': renderRespostas(); break;
@@ -360,7 +304,7 @@ function fecharMobileMenu() {
   document.getElementById('sidebar-overlay')?.classList.remove('visivel');
 }
 
-// ── Sidebar colapsar ────────────────────────────────────
+// ── Sidebar colapsar/expandir ────────────────────────────
 function toggleSidebar() {
   const sidebar   = document.getElementById('sidebar');
   const content   = document.querySelector('.content');
@@ -375,29 +319,65 @@ async function sair() {
   location.href = 'login.html';
 }
 
+// ── Utilitário ───────────────────────────────────────────
+function setEl(id, txt) {
+  const el = document.getElementById(id);
+  if (el) el.textContent = txt;
+}
+
 // ── Tooltips: click para mobile ──────────────────────────
 document.addEventListener('click', function(e) {
   const ico = e.target.closest('.tooltip-ico');
   if (ico) {
     e.stopPropagation();
     const wrap = ico.closest('.tooltip-wrap');
+    // Verificar se fica perto da borda direita
     const rect = wrap.getBoundingClientRect();
     if (rect.left + 130 > window.innerWidth - 20) {
       wrap.classList.add('tooltip-esq');
     } else {
       wrap.classList.remove('tooltip-esq');
     }
-    wrap.classList.toggle('ativo');
+    // Toggle ativo
+    const ativo = wrap.classList.toggle('ativo');
+    // Fechar outros abertos
     document.querySelectorAll('.tooltip-wrap.ativo').forEach(w => {
       if (w !== wrap) w.classList.remove('ativo');
     });
     return;
   }
-  document.querySelectorAll('.tooltip-wrap.ativo').forEach(w => w.classList.remove('ativo'));
+  // Fechar qualquer tooltip aberto ao clicar fora
+  document.querySelectorAll('.tooltip-wrap.ativo').forEach(w => {
+    w.classList.remove('ativo');
+  });
 });
 
-// ── Utilitário ───────────────────────────────────────────
-function setEl(id, txt) {
-  const el = document.getElementById(id);
-  if (el) el.textContent = txt;
+
+// ── Atualizar tag de última atualização ─────────────────
+function atualizarTagHora() {
+  const tag = document.getElementById('tag-atualizacao');
+  if (!tag) return;
+  const agora = new Date();
+  const hora  = agora.toLocaleTimeString('pt-BR', { hour:'2-digit', minute:'2-digit' });
+  tag.textContent = ' · Atualizado às ' + hora;
+}
+// ── Atualizar dados manualmente ──────────────────────────
+async function atualizarManual() {
+  const btn = document.getElementById('btn-refresh');
+  if (btn) {
+    btn.disabled = true;
+    btn.classList.add('refresh-spin');
+  }
+  await carregarTodosOsDados();
+  switch (STATE.secao) {
+    case 'dashboard': renderDashboard(); break;
+    case 'respostas': aplicarFiltrosRes(); break;
+  }
+  atualizarTagHora();
+  if (btn) {
+    btn.disabled = false;
+    btn.classList.remove('refresh-spin');
+    btn.classList.add('refresh-ok');
+    setTimeout(() => btn.classList.remove('refresh-ok'), 1500);
+  }
 }
