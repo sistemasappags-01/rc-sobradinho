@@ -342,6 +342,526 @@ function fecharModalRes() {
   document.getElementById('res-modal')?.classList.remove('show');
 }
 
+
+// ═══════════════════════════════════════════════════════════
+//  Relatório Técnico de Satisfação — geração PDF
+//  Dados agregados apenas (sem nome/telefone — LGPD)
+// ═══════════════════════════════════════════════════════════
+function gerarRelatorioRes() {
+  // Bloqueio de perfil
+  if (document.body.classList.contains('perfil-visualizador')) return;
+
+  const d       = STATE.res.filtrados;
+  const dataIni = document.getElementById('res-f-data-ini')?.value || '—';
+  const dataFim = document.getElementById('res-f-data-fim')?.value || '—';
+  const fmtFiltro = (v) => v ? new Date(v + 'T00:00:00').toLocaleDateString('pt-BR') : '—';
+  const periodo   = document.getElementById('res-f-refeicao')?.value;
+  const periodoTxt = periodo ? nomePeriodo(periodo) : 'Todos os períodos';
+  const hoje = new Date().toLocaleDateString('pt-BR', {day:'2-digit',month:'long',year:'numeric'});
+  const agora = new Date().toLocaleTimeString('pt-BR', {hour:'2-digit',minute:'2-digit'});
+
+  // ── Calcular indicadores agregados ────────────────────────
+  const total    = d.length;
+  const totalAv  = d.reduce((a,r) =>
+    a + [r.refeicao,r.atendimento,r.ambiente].filter(notaValida).length, 0);
+
+  const contar = (fn) => d.reduce((a,r) =>
+    a + [r.refeicao,r.atendimento,r.ambiente].filter(fn).length, 0);
+
+  const nOtimo   = contar(n => ['Ótima','Ótimo'].includes(n));
+  const nBom     = contar(n => ['Boa','Bom'].includes(n));
+  const nRegular = contar(n => n === 'Regular');
+  const nRuim    = contar(n => n === 'Ruim');
+
+  const pctsNotas = pctMultiplo([nOtimo, nBom, nRegular, nRuim], totalAv);
+
+  const mAtend = calcMediaCat(d, 'atendimento');
+  const mAmb   = calcMediaCat(d, 'ambiente');
+  const mRef   = calcMediaCat(d, 'refeicao');
+  const mGeral = calcMedia(d);
+  const fmt2   = v => v !== null ? v.toFixed(2).replace('.',',') : '—';
+
+  const porRef = {cafe:0, almoco:0, jantar:0};
+  d.forEach(r => { const k = normPeriodo(r.periodo); if (k && porRef[k]!==undefined) porRef[k]++; });
+  const pctsRef = pctMultiplo([porRef.almoco, porRef.cafe, porRef.jantar],
+    porRef.almoco + porRef.cafe + porRef.jantar);
+
+  // ── Top observações ───────────────────────────────────────
+  const stop = new Set(['de','a','o','e','em','para','com','que','do','da','no','na',
+    'um','uma','os','as','se','foi','por','mais','mas','não','já','bem','como',
+    'esse','ao','dos','das','pelo','pela','este','esta','quando','sobre','sua','seu']);
+  const freq = {};
+  d.forEach(r => {
+    if (!r.observacoes?.trim()) return;
+    r.observacoes.toLowerCase()
+      .replace(/[^a-záàâãéèêíïóôõöúüç\s]/gi,' ').split(/\s+/)
+      .filter(w => w.length > 3 && !stop.has(w))
+      .forEach(w => { freq[w] = (freq[w]||0)+1; });
+  });
+  const topObs = Object.entries(freq).sort((a,b)=>b[1]-a[1]).slice(0,10);
+  const obsComTexto = d.filter(r => r.observacoes?.trim() && r.observacoes !== 'null');
+
+  // ── Gerar barra HTML ──────────────────────────────────────
+  const barra = (pct, cor) =>
+    `<div style="display:inline-block;width:${Math.max(pct,1)}%;height:12px;background:${cor};border-radius:2px;vertical-align:middle"></div>`;
+
+  // ── Classificação de média ────────────────────────────────
+  const classificar = v => {
+    if (v === null) return '—';
+    if (v >= 3.5)  return 'Excelente';
+    if (v >= 3.0)  return 'Bom';
+    if (v >= 2.5)  return 'Regular — atenção';
+    return 'Crítico — ação imediata';
+  };
+
+  // ── Insights automáticos ──────────────────────────────────
+  const insights = [];
+  const pctPos = calcPctPos(d), pctNeg = calcPctNeg(d);
+  if (pctPos !== null) {
+    if (pctPos >= 80) insights.push('Satisfação geral elevada (' + pctPos + '% positivas). Manter padrão operacional.');
+    else if (pctPos >= 60) insights.push('Satisfação moderada (' + pctPos + '% positivas). Investigar pontos de queda.');
+    else insights.push('Satisfação crítica (' + pctPos + '% positivas). Plano de ação necessário.');
+  }
+  if (mRef !== null && mRef < 2.5) insights.push('Qualidade da refeição com média crítica (' + fmt2(mRef) + '). Revisar cardápio e preparo.');
+  if (mAtend !== null && mAtend < 2.5) insights.push('Atendimento com média crítica (' + fmt2(mAtend) + '). Avaliar capacitação da equipe.');
+  if (mAmb !== null && mAmb < 2.5) insights.push('Ambiente com média crítica (' + fmt2(mAmb) + '). Verificar limpeza e infraestrutura.');
+  if (pctNeg !== null && pctNeg > 10) insights.push(pctNeg + '% das avaliações são "Ruim". Identificar causa raiz com urgência.');
+  if (!insights.length) insights.push('Indicadores dentro dos parâmetros esperados no período analisado.');
+
+  // ── HTML do relatório ─────────────────────────────────────
+  const html = `<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<title>Relatório Técnico — RC Sobradinho</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 11pt;
+    color: #1a1a1a;
+    background: #fff;
+    padding: 0;
+  }
+  .pagina {
+    width: 210mm;
+    min-height: 297mm;
+    margin: 0 auto;
+    padding: 20mm 20mm 15mm;
+    background: #fff;
+  }
+  /* Cabeçalho institucional */
+  .cabecalho-inst {
+    text-align: center;
+    border-bottom: 2px solid #1a3a6e;
+    padding-bottom: 10px;
+    margin-bottom: 8px;
+  }
+  .cabecalho-inst p { font-size: 9pt; line-height: 1.5; color: #333; }
+  .cabecalho-inst p:first-child { font-weight: bold; font-size: 10pt; }
+  .ref-doc {
+    font-size: 8.5pt;
+    color: #555;
+    margin-bottom: 16px;
+  }
+  /* Título principal */
+  .titulo-relatorio {
+    text-align: center;
+    font-size: 14pt;
+    font-weight: bold;
+    text-transform: uppercase;
+    margin: 20px 0 6px;
+    color: #1a3a6e;
+    letter-spacing: 0.5px;
+  }
+  .subtitulo-relatorio {
+    text-align: center;
+    font-size: 9pt;
+    color: #555;
+    margin-bottom: 20px;
+  }
+  /* Metadados */
+  .meta { margin-bottom: 18px; }
+  .meta p { font-size: 10.5pt; margin-bottom: 4px; }
+  .meta strong { color: #1a3a6e; }
+  /* Seções */
+  .secao {
+    margin-bottom: 20px;
+    page-break-inside: avoid;
+  }
+  .secao-titulo {
+    background: #1a3a6e;
+    color: #fff;
+    font-size: 10pt;
+    font-weight: bold;
+    padding: 5px 10px;
+    margin-bottom: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .secao-body { padding: 0 4px; }
+  .item { margin-bottom: 6px; font-size: 10.5pt; line-height: 1.5; }
+  /* Tabelas */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 10pt;
+    margin-bottom: 10px;
+  }
+  th {
+    background: #e8edf5;
+    color: #1a3a6e;
+    font-weight: bold;
+    text-align: left;
+    padding: 6px 8px;
+    border: 1px solid #c8d4e8;
+  }
+  td {
+    padding: 5px 8px;
+    border: 1px solid #ddd;
+    vertical-align: middle;
+  }
+  tr:nth-child(even) td { background: #f8fafc; }
+  .num { text-align: right; font-weight: bold; }
+  .pct { text-align: right; color: #555; }
+  /* Indicadores em destaque */
+  .kpi-row {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 14px;
+    flex-wrap: wrap;
+  }
+  .kpi {
+    flex: 1;
+    min-width: 100px;
+    border: 1px solid #c8d4e8;
+    border-top: 3px solid #1a3a6e;
+    border-radius: 4px;
+    padding: 8px 10px;
+    text-align: center;
+  }
+  .kpi-val {
+    font-size: 18pt;
+    font-weight: bold;
+    color: #1a3a6e;
+    display: block;
+  }
+  .kpi-lbl { font-size: 8pt; color: #666; }
+  /* Alertas */
+  .alerta {
+    padding: 5px 10px;
+    border-left: 3px solid #d97706;
+    background: #fffbeb;
+    margin-bottom: 6px;
+    font-size: 10pt;
+  }
+  .alerta.critico { border-color: #e11d48; background: #fff1f2; }
+  .alerta.positivo { border-color: #059669; background: #f0fdf4; }
+  /* Barra de progresso */
+  .barra-wrap {
+    background: #f1f5f9;
+    border-radius: 3px;
+    height: 12px;
+    overflow: hidden;
+    display: inline-block;
+    width: 120px;
+    vertical-align: middle;
+    margin: 0 6px;
+  }
+  .barra-fill { height: 100%; border-radius: 3px; }
+  /* Rodapé */
+  .rodape {
+    margin-top: 30px;
+    border-top: 1px solid #c8d4e8;
+    padding-top: 8px;
+    font-size: 8pt;
+    color: #777;
+    text-align: center;
+  }
+  .aviso-lgpd {
+    font-size: 8pt;
+    color: #888;
+    font-style: italic;
+    text-align: center;
+    margin-top: 6px;
+    padding: 4px;
+    border: 1px dashed #ccc;
+    border-radius: 3px;
+  }
+  /* Assinatura */
+  .assinatura {
+    margin-top: 30px;
+    display: flex;
+    justify-content: flex-end;
+  }
+  .assinatura-bloco {
+    text-align: center;
+    width: 220px;
+    border-top: 1px solid #333;
+    padding-top: 6px;
+    font-size: 9pt;
+  }
+  @media print {
+    body { background: #fff !important; }
+    .pagina { padding: 15mm 15mm 10mm; width: 100%; }
+    .no-print { display: none !important; }
+    @page { size: A4; margin: 0; }
+  }
+</style>
+</head>
+<body>
+<div class="pagina">
+
+  <!-- ── Cabeçalho institucional ── -->
+  <div class="cabecalho-inst">
+    <p>Governo do Distrito Federal</p>
+    <p>Secretaria de Estado de Desenvolvimento Social do Distrito Federal</p>
+    <p>Diretoria de Gestão de Equipamentos de Segurança Alimentar e Nutricional</p>
+    <p>Gerência Regional de Segurança Alimentar e Nutricional de Sobradinho</p>
+  </div>
+  <p class="ref-doc">Relatório Técnico — SEDES/CSAN/DIGESAN/GERSANSOB</p>
+
+  <div class="titulo-relatorio">Relatório Técnico de Monitoramento da Satisfação dos Usuários</div>
+  <div class="subtitulo-relatorio">Documento gerado automaticamente pelo Sistema de Pesquisa de Satisfação</div>
+
+  <!-- ── Identificação ── -->
+  <div class="meta">
+    <p><strong>Unidade:</strong> Restaurante Comunitário de Sobradinho</p>
+    <p><strong>Período analisado:</strong> ${fmtFiltro(dataIni)} a ${fmtFiltro(dataFim)}</p>
+    <p><strong>Refeição:</strong> ${periodoTxt}</p>
+    <p><strong>Total de respostas no período:</strong> ${total}</p>
+    <p><strong>Data de geração:</strong> ${hoje} às ${agora}</p>
+  </div>
+
+  <!-- ── 1. Relatório ── -->
+  <div class="secao">
+    <div class="secao-titulo">1. Relatório</div>
+    <div class="secao-body">
+      <p class="item">1.1. Trata-se de relatório técnico elaborado pela Gerência Regional de Segurança Alimentar e Nutricional de Sobradinho – GERSANSOB, em atendimento às diretrizes institucionais relativas ao monitoramento da satisfação dos usuários dos Restaurantes Comunitários, com vistas à avaliação da qualidade dos serviços prestados pela empresa contratada.</p>
+      <p class="item">1.2. A coleta de dados foi realizada por meio de formulário digital de pesquisa de opinião, contemplando a avaliação da qualidade da refeição, do atendimento e do ambiente, com as classificações: Ótimo, Bom, Regular e Ruim, além de campo destinado a observações livres.</p>
+      <p class="item">1.3. No período de <strong>${fmtFiltro(dataIni)}</strong> a <strong>${fmtFiltro(dataFim)}</strong>, foram registradas <strong>${total} avaliações</strong>, totalizando <strong>${totalAv} notas válidas</strong> distribuídas entre os três critérios avaliados.</p>
+    </div>
+  </div>
+
+  <!-- ── 2. Análise dos Resultados ── -->
+  <div class="secao">
+    <div class="secao-titulo">2. Análise dos Resultados</div>
+    <div class="secao-body">
+      <p class="item">2.1. Procedeu-se à consolidação das informações obtidas no período, conforme apresentado a seguir:</p>
+
+      <!-- KPIs -->
+      <div class="kpi-row">
+        <div class="kpi">
+          <span class="kpi-val">${total}</span>
+          <span class="kpi-lbl">Total de Avaliações</span>
+        </div>
+        <div class="kpi" style="border-top-color:#059669">
+          <span class="kpi-val" style="color:#059669">${pctPos !== null ? pctPos + '%' : '—'}</span>
+          <span class="kpi-lbl">Positivas (Ótimo+Bom)</span>
+        </div>
+        <div class="kpi" style="border-top-color:#d97706">
+          <span class="kpi-val" style="color:#d97706">${pctStr(nRegular, totalAv)}</span>
+          <span class="kpi-lbl">Regulares</span>
+        </div>
+        <div class="kpi" style="border-top-color:#e11d48">
+          <span class="kpi-val" style="color:#e11d48">${pctNeg !== null ? pctNeg + '%' : '—'}</span>
+          <span class="kpi-lbl">Negativas (Ruim)</span>
+        </div>
+      </div>
+
+      <!-- Tabela distribuição das notas -->
+      <p class="item"><strong>2.1.1. Distribuição das avaliações por nota:</strong></p>
+      <table>
+        <tr>
+          <th>Classificação</th>
+          <th class="num">Qtd. de notas</th>
+          <th class="pct">Percentual</th>
+          <th>Representação</th>
+        </tr>
+        <tr>
+          <td><strong style="color:#059669">Ótimo</strong></td>
+          <td class="num">${nOtimo}</td>
+          <td class="pct">${pctsNotas[0]}%</td>
+          <td><div class="barra-wrap"><div class="barra-fill" style="width:${pctsNotas[0]}%;background:#059669"></div></div></td>
+        </tr>
+        <tr>
+          <td><strong style="color:#10b981">Bom</strong></td>
+          <td class="num">${nBom}</td>
+          <td class="pct">${pctsNotas[1]}%</td>
+          <td><div class="barra-wrap"><div class="barra-fill" style="width:${pctsNotas[1]}%;background:#10b981"></div></div></td>
+        </tr>
+        <tr>
+          <td><strong style="color:#d97706">Regular</strong></td>
+          <td class="num">${nRegular}</td>
+          <td class="pct">${pctsNotas[2]}%</td>
+          <td><div class="barra-wrap"><div class="barra-fill" style="width:${pctsNotas[2]}%;background:#d97706"></div></div></td>
+        </tr>
+        <tr>
+          <td><strong style="color:#e11d48">Ruim</strong></td>
+          <td class="num">${nRuim}</td>
+          <td class="pct">${pctsNotas[3]}%</td>
+          <td><div class="barra-wrap"><div class="barra-fill" style="width:${pctsNotas[3]}%;background:#e11d48"></div></div></td>
+        </tr>
+        <tr style="background:#e8edf5;font-weight:bold">
+          <td>Total de notas válidas</td>
+          <td class="num">${totalAv}</td>
+          <td class="pct">100%</td>
+          <td></td>
+        </tr>
+      </table>
+
+      <!-- Tabela médias por categoria -->
+      <p class="item"><strong>2.1.2. Médias por critério de avaliação (escala 1 = Ruim a 4 = Ótimo):</strong></p>
+      <table>
+        <tr>
+          <th>Critério</th>
+          <th class="num">Média</th>
+          <th>Classificação</th>
+        </tr>
+        <tr>
+          <td>Qualidade da Refeição</td>
+          <td class="num">${fmt2(mRef)}</td>
+          <td>${classificar(mRef)}</td>
+        </tr>
+        <tr>
+          <td>Qualidade do Atendimento</td>
+          <td class="num">${fmt2(mAtend)}</td>
+          <td>${classificar(mAtend)}</td>
+        </tr>
+        <tr>
+          <td>Qualidade do Ambiente</td>
+          <td class="num">${fmt2(mAmb)}</td>
+          <td>${classificar(mAmb)}</td>
+        </tr>
+        <tr style="background:#e8edf5;font-weight:bold">
+          <td>Média Geral</td>
+          <td class="num">${fmt2(mGeral)}</td>
+          <td>${classificar(mGeral)}</td>
+        </tr>
+      </table>
+
+      <!-- Distribuição por refeição -->
+      <p class="item"><strong>2.1.3. Distribuição por período de refeição:</strong></p>
+      <table>
+        <tr>
+          <th>Período</th>
+          <th class="num">Avaliações</th>
+          <th class="pct">Participação</th>
+        </tr>
+        <tr>
+          <td>Almoço</td>
+          <td class="num">${porRef.almoco}</td>
+          <td class="pct">${pctsRef[0]}%</td>
+        </tr>
+        <tr>
+          <td>Café da Manhã</td>
+          <td class="num">${porRef.cafe}</td>
+          <td class="pct">${pctsRef[1]}%</td>
+        </tr>
+        <tr>
+          <td>Jantar</td>
+          <td class="num">${porRef.jantar}</td>
+          <td class="pct">${pctsRef[2]}%</td>
+        </tr>
+      </table>
+
+      <p class="item">2.2. Da análise dos dados, verificou-se que ${
+        pctPos !== null
+          ? pctPos >= 70
+            ? `predominaram avaliações positivas, com ${pctPos}% das notas classificadas como Ótimo ou Bom, indicando satisfação adequada dos usuários no período.`
+            : pctPos >= 50
+              ? `houve equilíbrio entre avaliações positivas e negativas/regulares (${pctPos}% positivas), demandando atenção quanto à qualidade dos serviços.`
+              : `há presença relevante de avaliações negativas e regulares (${100 - pctPos}% do total), o que requer atenção imediata por parte da empresa contratada.`
+          : 'não foi possível calcular os percentuais para o período selecionado.'
+      }</p>
+    </div>
+  </div>
+
+  <!-- ── 3. Principais Manifestações ── -->
+  <div class="secao">
+    <div class="secao-titulo">3. Principais Manifestações dos Usuários</div>
+    <div class="secao-body">
+      <p class="item">3.1. Com base nas observações registradas nos formulários (${obsComTexto.length} registros com comentários), foram identificados os seguintes termos mais frequentes nas manifestações dos usuários:</p>
+      ${topObs.length ? `
+      <table>
+        <tr><th>Termo identificado</th><th class="num">Frequência</th></tr>
+        ${topObs.map(([w,n]) => `<tr><td>${w}</td><td class="num">${n}</td></tr>`).join('')}
+      </table>` : '<p class="item">Não foram identificadas observações textuais no período selecionado.</p>'}
+      <p class="item">3.2. As manifestações acima foram extraídas anonimamente dos campos de observação livre dos formulários, preservando a privacidade dos usuários em conformidade com a Lei Geral de Proteção de Dados (Lei nº 13.709/2018).</p>
+    </div>
+  </div>
+
+  <!-- ── 4. Análise Automática / Não Conformidades ── -->
+  <div class="secao">
+    <div class="secao-titulo">4. Análise e Pontos de Atenção</div>
+    <div class="secao-body">
+      <p class="item">4.1. A partir da análise dos dados do período, foram identificados os seguintes pontos:</p>
+      ${insights.map((ins, i) => {
+        const critico = ins.toLowerCase().includes('crítico') || ins.toLowerCase().includes('urgência') || ins.toLowerCase().includes('negativas');
+        const positivo = ins.toLowerCase().includes('elevada') || ins.toLowerCase().includes('parâmetros');
+        return `<div class="alerta ${critico ? 'critico' : positivo ? 'positivo' : ''}">
+          <strong>4.1.${i+1}.</strong> ${ins}
+        </div>`;
+      }).join('')}
+      <p class="item" style="margin-top:8px">4.2. Ressalta-se que os apontamentos acima deverão ser avaliados pela empresa contratada, com vistas à adoção de medidas corretivas e preventivas quando aplicável.</p>
+    </div>
+  </div>
+
+  <!-- ── 5. Conclusão ── -->
+  <div class="secao">
+    <div class="secao-titulo">5. Conclusão</div>
+    <div class="secao-body">
+      <p class="item">5.1. Verificou-se que o monitoramento da satisfação dos usuários constitui ferramenta relevante para avaliação da execução contratual, permitindo a identificação de fragilidades e subsidiando a melhoria contínua dos serviços ofertados.</p>
+      <p class="item">5.2. Diante do exposto, entende-se necessária a ciência da empresa contratada acerca dos resultados apresentados, bem como a apresentação de manifestação formal contendo plano de ação com prazos definidos para tratamento das inconsistências identificadas, quando aplicável.</p>
+    </div>
+  </div>
+
+  <!-- ── 6. Encaminhamento ── -->
+  <div class="secao">
+    <div class="secao-titulo">6. Encaminhamento</div>
+    <div class="secao-body">
+      <p class="item">6.1. Encaminhem-se os autos à empresa contratada para ciência e manifestação, devendo ser apresentado plano de ação contemplando medidas corretivas e preventivas, no prazo de 5 (cinco) dias úteis, a contar do recebimento deste documento.</p>
+    </div>
+  </div>
+
+  <!-- ── Assinatura ── -->
+  <div class="assinatura">
+    <div class="assinatura-bloco">
+      <p>Brasília-DF, ${hoje}</p>
+      <br>
+      <p>________________________________________</p>
+      <p><strong>Gerência Regional de Segurança Alimentar</strong></p>
+      <p><strong>e Nutricional de Sobradinho — GERSANSOB</strong></p>
+    </div>
+  </div>
+
+  <!-- ── Rodapé ── -->
+  <div class="rodape">
+    <p>AR 13 — Área Especial 08 — Quadra 03 — Setor Administrativo — Bairro Sobradinho — DF | Tel.: (61) 3773-7649 | www.sedes.df.gov.br</p>
+    <div class="aviso-lgpd">
+      Este documento contém exclusivamente dados agregados e anônimos. Nenhum dado pessoal identificável foi incluído, em conformidade com a Lei nº 13.709/2018 (LGPD).
+    </div>
+  </div>
+
+</div>
+
+<script>
+  // Abrir diálogo de impressão automaticamente
+  window.onload = function() { window.print(); };
+</script>
+</body>
+</html>`;
+
+  // Abrir em nova janela
+  const win = window.open('', '_blank', 'width=900,height=700,scrollbars=yes');
+  if (!win) {
+    alert('Por favor, permita pop-ups para este site para gerar o relatório.');
+    return;
+  }
+  win.document.write(html);
+  win.document.close();
+}
+
 // ── Exportar CSV ──────────────────────────────────────────
 function exportarCSVRes() {
   // Bloqueio extra: visualizador não pode exportar mesmo que chame a função direto
