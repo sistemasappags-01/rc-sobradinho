@@ -129,16 +129,11 @@ function renderNav() {
 
   // Visualizador: ocultar botões restritos e sinalizar para a tabela
   if (p.perfil === 'visualizador') {
-    // Ocultar botões do cabeçalho
+    // Ocultar botões de ação restritos
     document.querySelectorAll('.res-btn-restrito').forEach(el => {
       el.style.display = 'none';
     });
-    // Ocultar subitens da sidebar (CSV, PDF, Nova Resposta)
-    const subDash = document.getElementById('sub-dashboard');
-    const subRes  = document.getElementById('sub-respostas');
-    if (subDash) subDash.style.display = 'none';
-    if (subRes)  subRes.style.display  = 'none';
-    // Marcar o body para CSS controlar visibilidade
+    // Marcar o body para CSS ocultar coluna Nome
     document.body.classList.add('perfil-visualizador');
   }
 }

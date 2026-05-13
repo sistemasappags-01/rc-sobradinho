@@ -344,7 +344,7 @@
         </div>
 
         <!-- Stats -->
-        <div class="grid4 mb12 res-stats-grid">
+        <div class="grid4 mb12" style="grid-template-columns:repeat(5,1fr)">
           <div class="card"><div class="stat-card"><div class="stat-icone azul"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div><div><div class="stat-val" id="res-st-total">—</div><div class="stat-lbl">Respostas</div><div class="stat-sub">No período</div></div></div></div>
           <div class="card"><div class="stat-card"><div class="stat-icone verde"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3z"/><path d="M7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/></svg></div><div><div class="stat-val" id="res-st-positivas">—</div><div class="stat-lbl">Positivas</div><div class="stat-sub">Ótimo + Bom</div></div></div></div>
           <div class="card"><div class="stat-card"><div class="stat-icone amarelo"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="8" y1="12" x2="16" y2="12"/></svg></div><div><div class="stat-val" id="res-st-regulares">—</div><div class="stat-lbl">Regulares</div><div class="stat-sub">Regular</div></div></div></div>
@@ -365,7 +365,7 @@
                 <option value="50">50 por página</option>
               </select>
             </div>
-            <div class="tabela-scroll">
+            <div style="overflow-x:auto">
               <table class="tab-aten">
                 <thead><tr><th>Data/Hora</th><th>Refeição</th><th>Avaliação</th><th>Atendimento</th><th>Ambiente</th><th class="col-restrito">Nome</th><th>Observações</th><th></th></tr></thead>
                 <tbody id="res-tabela-corpo"><tr><td colspan="8" class="empty">Carregando…</td></tr></tbody>
