@@ -243,17 +243,21 @@ function renderTabelaRes() {
 
   setHTML('res-tabela-corpo', page.length
     ? page.map((r, i) => {
-        const nome = r.nome?.trim() || 'Anônimo';
-        const tel  = r.telefone?.trim()
+        const periodo  = normPeriodo(r.periodo);
+        const ehVisualizador = document.body.classList.contains('perfil-visualizador');
+        // Visualizador não vê nome nem telefone
+        const nomeExib = ehVisualizador
+          ? '<em class="vazio res-dado-restrito">— restrito —</em>'
+          : (r.nome?.trim() || 'Anônimo');
+        const telExib  = (!ehVisualizador && r.telefone?.trim())
           ? `<br><small style="color:var(--tx3)">${r.telefone}</small>` : '';
-        const periodo = normPeriodo(r.periodo); // CORREÇÃO: normalizar
         return `<tr>
           <td class="td-data">${fmtData(r.created_at)}</td>
           <td><span class="ref-badge ${classeRef(periodo)}">${nomePeriodo(periodo)}</span></td>
           <td>${celulaNota(r.refeicao)}</td>
           <td>${celulaNota(r.atendimento)}</td>
           <td>${celulaNota(r.ambiente)}</td>
-          <td class="td-data">${nome}${tel}</td>
+          <td class="td-data col-restrito">${nomeExib}${telExib}</td>
           <td class="td-obs-txt" title="${r.observacoes || ''}">${r.observacoes || '<em class="vazio">—</em>'}</td>
           <td class="td-acoes">
             <button class="btn-menu" onclick="verDetalhesRes(${ini + i})" title="Ver detalhes">⋮</button>
@@ -327,8 +331,12 @@ function verDetalhesRes(idx) {
     ${row('Avaliação',   celulaNota(r.refeicao))}
     ${row('Atendimento', celulaNota(r.atendimento))}
     ${row('Ambiente',    celulaNota(r.ambiente))}
-    ${row('Nome',        r.nome    || '<em class="vazio">Anônimo</em>')}
-    ${row('Telefone',    r.telefone || '<em class="vazio">—</em>')}
+    ${row('Nome',    document.body.classList.contains('perfil-visualizador')
+        ? '<em class="vazio res-dado-restrito">— restrito —</em>'
+        : (r.nome || '<em class="vazio">Anônimo</em>'))}
+    ${row('Telefone', document.body.classList.contains('perfil-visualizador')
+        ? '<em class="vazio res-dado-restrito">— restrito —</em>'
+        : (r.telefone || '<em class="vazio">—</em>'))}
     ${row('Observação',  r.observacoes || '<em class="vazio">—</em>')}
   `);
   document.getElementById('res-modal').classList.add('show');
@@ -340,6 +348,11 @@ function fecharModalRes() {
 
 // ── Exportar CSV ──────────────────────────────────────────
 function exportarCSVRes() {
+  // Bloqueio extra: visualizador não pode exportar mesmo que chame a função direto
+  if (document.body.classList.contains('perfil-visualizador')) {
+    console.warn('Acesso negado: perfil visualizador não pode exportar dados.');
+    return;
+  }
   const d   = STATE.res.filtrados;
   const cab = ['Data/Hora','Refeição','Avaliação','Atendimento','Ambiente','Nome','Telefone','Observações'];
   const lin = d.map(r => {

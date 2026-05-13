@@ -126,6 +126,16 @@ function renderNav() {
     const el = document.getElementById('nav-admin-item');
     if (el) el.style.display = 'flex';
   }
+
+  // Visualizador: ocultar botões restritos e sinalizar para a tabela
+  if (p.perfil === 'visualizador') {
+    // Ocultar botões de ação restritos
+    document.querySelectorAll('.res-btn-restrito').forEach(el => {
+      el.style.display = 'none';
+    });
+    // Marcar o body para CSS ocultar coluna Nome
+    document.body.classList.add('perfil-visualizador');
+  }
 }
 
 // ── Carregar dados do banco ──────────────────────────────
