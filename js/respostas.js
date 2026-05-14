@@ -461,40 +461,39 @@ function gerarRelatorioRes() {
     border-bottom: 1.5px solid #000;
     padding-bottom: 10px;
     margin-bottom: 20px;
-    min-height: 85px;
+    min-height: 95px;
   }
   .cab-brasao {
     position: absolute;
     left: 0;
     top: 50%;
     transform: translateY(-50%);
-    width: 80px;
+    width: 90px;
     flex-shrink: 0;
   }
   .cab-brasao img {
-    width: 80px;
+    width: 90px;
     height: auto;
     object-fit: contain;
-    background: transparent;
-    mix-blend-mode: multiply; /* remove fundo branco no print */
   }
   /* Texto ocupa toda a largura e centraliza */
   .cab-textos {
     flex: 1;
     text-align: center;
-    padding: 0 90px; /* espaço para o brasão 80px não sobrepor */
+    /* padding menor para linhas longas não quebrarem */
+    padding: 0 100px;
   }
   .cab-textos p {
-    font-size: 10.5pt;
-    font-weight: normal; /* sem negrito nas linhas secundárias */
-    line-height: 1.7;
+    font-size: 10pt;
+    font-weight: normal;
+    line-height: 1.65;
     color: #000;
     text-align: center;
+    white-space: nowrap; /* impede quebra de linha no meio do nome */
   }
-  .cab-textos p:first-child {
-    font-weight: bold; /* só "Governo do Distrito Federal" em negrito */
-    font-size: 11pt;
-    margin-bottom: 2px;
+  /* Escala automática se o texto for mais largo que o container */
+  @media print {
+    .cab-textos p { white-space: normal; font-size: 9.5pt; }
   }
   /* Título principal */
   .titulo-relatorio {
@@ -654,8 +653,7 @@ function gerarRelatorioRes() {
       margin-top: 20px;
       page-break-inside: avoid;
     }
-    /* Brasão transparente no print */
-    .cab-brasao img { mix-blend-mode: multiply; }
+
   }
   @media screen {
     body { background: #e5e5e5; }
