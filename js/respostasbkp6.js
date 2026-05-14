@@ -666,15 +666,6 @@ function gerarRelatorioRes() {
       box-shadow: 0 2px 8px rgba(0,0,0,0.15);
     }
   }
-
-  /* Tabela de assinaturas — sem bordas de tabela padrão */
-  .tab-ass, .tab-ass tr, .tab-ass td {
-    border: none !important;
-    background: transparent !important;
-  }
-  @media print {
-    .tab-ass { page-break-inside: avoid; }
-  }
 </style>
 </head>
 <body>
@@ -694,10 +685,6 @@ function gerarRelatorioRes() {
   </div>
 
   <div class="titulo-relatorio">Relatório Técnico de Monitoramento da Satisfação dos Usuários</div>
-
-  <!-- Linha em branco + processo -->
-  <p style="margin:0">&nbsp;</p>
-  <p style="font-size:12pt;font-weight:normal;text-align:left;margin-bottom:16px"><strong>Processo nº:</strong> 00431-00008473/2026-87</p>
 
   <!-- ── Identificação ── -->
   <div class="meta">
@@ -887,6 +874,7 @@ function gerarRelatorioRes() {
     <div class="secao-titulo">5. Conclusão</div>
     <div class="secao-body">
       <p class="item">5.1. Verificou-se que o monitoramento da satisfação dos usuários constitui ferramenta relevante para avaliação da execução contratual, permitindo a identificação de fragilidades e subsidiando a melhoria contínua dos serviços ofertados.</p>
+      <p class="item" style="text-align:right;margin-bottom:12px">Brasília-DF, ${hoje}</p>
       <p class="item">5.2. Diante do exposto, entende-se necessária a ciência da empresa contratada acerca dos resultados apresentados, bem como a apresentação de manifestação formal contendo plano de ação com prazos definidos para tratamento das inconsistências identificadas, quando aplicável.</p>
     </div>
   </div>
@@ -895,44 +883,11 @@ function gerarRelatorioRes() {
   <div class="secao">
     <div class="secao-titulo">6. Encaminhamento</div>
     <div class="secao-body">
-      <p class="item">6.1. Encaminhem-se os autos à empresa contratada para ciência e manifestação, devendo ser apresentado <strong>plano de ação com prazos definidos</strong> contemplando medidas corretivas e preventivas, no prazo de <strong>5 (cinco) dias úteis</strong>, a contar do recebimento deste documento.</p>
+      <p class="item">6.1. Encaminhem-se os autos à empresa contratada para ciência e manifestação, devendo ser apresentado plano de ação contemplando medidas corretivas e preventivas, no prazo de 5 (cinco) dias úteis, a contar do recebimento deste documento.</p>
     </div>
   </div>
 
 
-
-  <!-- ── Data + Assinaturas ── -->
-  <div style="margin-top:28px">
-    <p style="font-size:12pt;text-align:right;margin-bottom:28px">Brasília-DF, ${hoje}</p>
-
-    <table style="width:100%;border:none;margin-bottom:0" class="tab-ass">
-      <tr>
-        <!-- Emissor -->
-        <td style="width:47%;border:none;text-align:center;vertical-align:bottom;padding:0 8px 0 0">
-          <div style="border-top:1px solid #000;padding-top:6px;margin-top:60px">
-            <p style="font-size:10pt;font-weight:bold;line-height:1.5;margin:0">
-              Gerência Regional de Segurança Alimentar<br>e Nutricional de Sobradinho
-            </p>
-            <p style="font-size:9pt;color:#333;margin:2px 0 0">Responsável pela emissão</p>
-            <p style="font-size:9pt;color:#333;margin:4px 0 0">Data: ___/___/______</p>
-          </div>
-        </td>
-        <!-- Espaçador -->
-        <td style="width:6%;border:none"></td>
-        <!-- Recebimento -->
-        <td style="width:47%;border:none;text-align:center;vertical-align:bottom;padding:0 0 0 8px">
-          <div style="border-top:1px solid #000;padding-top:6px;margin-top:60px">
-            <p style="font-size:10pt;font-weight:bold;line-height:1.5;margin:0">
-              Empresa Contratada
-            </p>
-            <p style="font-size:9pt;color:#333;margin:2px 0 0">Nome: _________________________________</p>
-            <p style="font-size:9pt;color:#333;margin:2px 0 0">Cargo: ________________________________</p>
-            <p style="font-size:9pt;color:#333;margin:4px 0 0">Data: ___/___/______</p>
-          </div>
-        </td>
-      </tr>
-    </table>
-  </div>
 
   <!-- ── Rodapé ── -->
   <div class="rodape">
