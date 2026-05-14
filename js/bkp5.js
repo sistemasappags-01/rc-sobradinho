@@ -461,41 +461,29 @@ function gerarRelatorioRes() {
     border-bottom: 1.5px solid #000;
     padding-bottom: 10px;
     margin-bottom: 20px;
-    min-height: 85px;
+    min-height: 70px;
   }
   .cab-brasao {
     position: absolute;
     left: 0;
     top: 50%;
     transform: translateY(-50%);
-    width: 80px;
+    width: 60px;
     flex-shrink: 0;
   }
   .cab-brasao img {
-    width: 80px;
+    width: 60px;
     height: auto;
     object-fit: contain;
-    background: transparent;
-    mix-blend-mode: multiply; /* remove fundo branco no print */
   }
   /* Texto ocupa toda a largura e centraliza */
   .cab-textos {
     flex: 1;
     text-align: center;
-    padding: 0 90px; /* espaço para o brasão 80px não sobrepor */
+    padding: 0 70px; /* espaço para o brasão não sobrepor */
   }
-  .cab-textos p {
-    font-size: 10.5pt;
-    font-weight: normal; /* sem negrito nas linhas secundárias */
-    line-height: 1.7;
-    color: #000;
-    text-align: center;
-  }
-  .cab-textos p:first-child {
-    font-weight: bold; /* só "Governo do Distrito Federal" em negrito */
-    font-size: 11pt;
-    margin-bottom: 2px;
-  }
+  .cab-textos p { font-size: 9pt; line-height: 1.6; color: #000; text-align: center; }
+  .cab-textos p:first-child { font-weight: bold; font-size: 10pt; }
   /* Título principal */
   .titulo-relatorio {
     text-align: center;
@@ -632,7 +620,7 @@ function gerarRelatorioRes() {
   /* Margens consistentes em TODAS as páginas (inclusive 2ª+) */
   @page {
     size: A4;
-    margin: 20mm;
+    margin: 30mm 20mm 25mm 30mm;
     /* Numeração de página no canto inferior direito */
     @bottom-right {
       content: "Página " counter(page) " de " counter(pages);
@@ -648,14 +636,7 @@ function gerarRelatorioRes() {
     body { background: #fff !important; }
     .pagina { padding: 0; width: 100%; }
     .no-print { display: none !important; }
-    /* Rodapé visível e protegido na última página */
-    .rodape {
-      display: block !important;
-      margin-top: 20px;
-      page-break-inside: avoid;
-    }
-    /* Brasão transparente no print */
-    .cab-brasao img { mix-blend-mode: multiply; }
+    .rodape { display: none !important; } /* rodapé no @page, não no HTML */
   }
   @media screen {
     body { background: #e5e5e5; }
@@ -663,7 +644,7 @@ function gerarRelatorioRes() {
       width: 210mm;
       min-height: 297mm;
       margin: 10mm auto;
-      padding: 20mm;
+      padding: 30mm 20mm 25mm 30mm;
       background: #fff;
       box-shadow: 0 2px 8px rgba(0,0,0,0.15);
     }
@@ -903,12 +884,8 @@ function gerarRelatorioRes() {
 
 <script>
   window.onload = function() {
-    // Define o título = nome padrão do arquivo PDF no navegador
-    const mesAno = new Date().toLocaleDateString('pt-BR', {month:'short', year:'numeric'})
-      .replace(' de ','').replace('.','')
-      .split('/').reverse().join('')
-      .replace(/^(\w)/,(m)=>m.toUpperCase());
-    document.title = 'RC-Sobradinho-Relatorio-' + mesAno;
+    // Calcular total de páginas aproximado e mostrar no rodapé da tela
+    // (no print o @page cuida disso automaticamente)
     window.print();
   };
 </script>
