@@ -843,10 +843,10 @@ function gerarRelatorioRes() {
       <p class="item">2.2. Da análise dos dados, verificou-se que ${
         pctPos !== null
           ? pctPos >= 70
-            ? \`predominaram avaliações positivas, com \${pctPos}% das notas classificadas como Ótimo ou Bom, indicando satisfação adequada dos usuários no período.\`
+            ? `predominaram avaliações positivas, com \${pctPos}% das notas classificadas como Ótimo ou Bom, indicando satisfação adequada dos usuários no período.`
             : pctPos >= 50
-              ? \`houve equilíbrio entre avaliações positivas e negativas/regulares (\${pctPos}% positivas), demandando atenção quanto à qualidade dos serviços.\`
-              : \`há presença relevante de avaliações negativas e regulares (\${100 - pctPos}% do total), o que requer atenção imediata por parte da empresa contratada.\`
+              ? `houve equilíbrio entre avaliações positivas e negativas/regulares (\${pctPos}% positivas), demandando atenção quanto à qualidade dos serviços.`
+              : `há presença relevante de avaliações negativas e regulares (\${100 - pctPos}% do total), o que requer atenção imediata por parte da empresa contratada.`
           : 'não foi possível calcular os percentuais para o período selecionado.'
       }</p>
 
@@ -868,15 +868,15 @@ function gerarRelatorioRes() {
           : pior.v >= 2.5 ? 'Regular — requer atenção'
           : 'Crítico — requer ação imediata';
 
-        let texto = \`Dentre os critérios avaliados, "\${melhor.nome}" apresentou o melhor desempenho \`
-          + \`(média \${fmt2(melhor.v)}), enquanto "\${pior.nome}" registrou a menor média (\${fmt2(pior.v)}), \`
-          + \`classificada como \${classPior}. \`;
+        let texto = `Dentre os critérios avaliados, "\${melhor.nome}" apresentou o melhor desempenho `
+          + `(média \${fmt2(melhor.v)}), enquanto "\${pior.nome}" registrou a menor média (\${fmt2(pior.v)}), `
+          + `classificada como \${classPior}. `;
 
         if (parseFloat(dif.replace(',','.')) >= 0.20) {
-          texto += \`A diferença de \${dif} pontos entre o melhor e o pior critério indica \`
-            + \`desempenho desigual entre os aspectos avaliados.\`;
+          texto += `A diferença de \${dif} pontos entre o melhor e o pior critério indica `
+            + `desempenho desigual entre os aspectos avaliados.`;
         } else {
-          texto += \`A variação de \${dif} pontos entre os critérios indica desempenho relativamente homogêneo no período.\`;
+          texto += `A variação de \${dif} pontos entre os critérios indica desempenho relativamente homogêneo no período.`;
         }
 
         if (pior.v < 2.5) {
@@ -907,17 +907,17 @@ function gerarRelatorioRes() {
         const maior = periodos[0];
         const menor = periodos[periodos.length - 1];
 
-        let texto = \`O período de "\${maior.nome}" concentrou o maior volume de avaliações \`
-          + \`(\${maior.val} registros — \${maior.pct}% do total), \`
-          + \`seguido de "\${periodos[1]?.nome}" (\${periodos[1]?.val} — \${periodos[1]?.pct}%).\`;
+        let texto = `O período de "\${maior.nome}" concentrou o maior volume de avaliações `
+          + `(\${maior.val} registros — \${maior.pct}% do total), `
+          + `seguido de "\${periodos[1]?.nome}" (\${periodos[1]?.val} — \${periodos[1]?.pct}%).`;
 
         if (menor.pct <= 15) {
-          texto += \` O período de "\${menor.nome}" registrou participação reduzida (\${menor.val} avaliações — \${menor.pct}%), \`
-            + \`o que pode indicar menor fluxo de usuários nesse turno ou necessidade de verificar o funcionamento do ponto de coleta.\`;
+          texto += ` O período de "\${menor.nome}" registrou participação reduzida (\${menor.val} avaliações — \${menor.pct}%), `
+            + `o que pode indicar menor fluxo de usuários nesse turno ou necessidade de verificar o funcionamento do ponto de coleta.`;
         }
 
         if (menor.val < 10) {
-          texto += \` Em virtude do volume reduzido de registros, os dados desse período devem ser interpretados com cautela.\`;
+          texto += ` Em virtude do volume reduzido de registros, os dados desse período devem ser interpretados com cautela.`;
         }
 
         return texto;
@@ -980,8 +980,8 @@ function gerarRelatorioRes() {
             ? 'abaixo da faixa satisfatória, requerendo atenção'
             : 'dentro da faixa aceitável, porém com espaço para melhoria';
 
-        return \`O critério "\${pior.nome}" registrou a menor média do período (\${fmt2(pior.v)}), situando-se \${nivel}. \`
-          + \`Foram contabilizadas \${ruimPorCampo} notas "Ruim" para esse critério (\${pctRuimCampo}% do total de notas válidas). \${recomendacao}\`;
+        return `O critério "\${pior.nome}" registrou a menor média do período (\${fmt2(pior.v)}), situando-se \${nivel}. `
+          + `Foram contabilizadas \${ruimPorCampo} notas "Ruim" para esse critério (\${pctRuimCampo}% do total de notas válidas). \${recomendacao}`;
       })()}</p>
 
       <!-- ── 4.3 Análise das observações ── -->
@@ -995,10 +995,10 @@ function gerarRelatorioRes() {
         const pctObsNeg = obsComTexto.length > 0
           ? Math.round(obsNeg / obsComTexto.length * 100) : 0;
 
-        const top3 = topObs.slice(0,3).map(([w]) => \`"\${w}"\`).join(', ');
+        const top3 = topObs.slice(0,3).map(([w]) => `"\${w}"`).join(', ');
 
-        let texto = \`Das \${obsComTexto.length} observações textuais registradas, \${obsNeg} (\${pctObsNeg}%) acompanharam avaliações negativas ou regulares. \`
-          + \`Os termos mais frequentes foram \${top3}, sugerindo \`;
+        let texto = `Das \${obsComTexto.length} observações textuais registradas, \${obsNeg} (\${pctObsNeg}%) acompanharam avaliações negativas ou regulares. `
+          + `Os termos mais frequentes foram \${top3}, sugerindo `;
 
         // Interpretar palavras-chave
         const palavras = topObs.map(([w]) => w.toLowerCase());
@@ -1046,14 +1046,14 @@ function gerarRelatorioRes() {
         if (pior.pct === 0 && negPorPeriodo.every(x => x.pct === 0))
           return 'Nenhum dos períodos registrou avaliações "Ruim" no período analisado, indicando ausência de insatisfação extrema entre os usuários.';
 
-        let texto = \`O período de "\${nomeP}" registrou a maior proporção de notas "Ruim" (\${pior.pct}% das notas válidas desse turno — \${pior.total} avaliações). \`;
+        let texto = `O período de "\${nomeP}" registrou a maior proporção de notas "Ruim" (\${pior.pct}% das notas válidas desse turno — \${pior.total} avaliações). `;
 
         if (pior.pct > 15) {
-          texto += \`O percentual acima de 15% é considerado crítico e recomenda-se atenção prioritária às condições de serviço nesse turno.\`;
+          texto += `O percentual acima de 15% é considerado crítico e recomenda-se atenção prioritária às condições de serviço nesse turno.`;
         } else if (pior.pct > 5) {
-          texto += \`O percentual indica necessidade de monitoramento continuado nesse período.\`;
+          texto += `O percentual indica necessidade de monitoramento continuado nesse período.`;
         } else {
-          texto += \`O percentual encontra-se dentro de limites aceitáveis, mas merece acompanhamento.\`;
+          texto += `O percentual encontra-se dentro de limites aceitáveis, mas merece acompanhamento.`;
         }
 
         return texto;
