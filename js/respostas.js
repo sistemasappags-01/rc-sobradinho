@@ -387,9 +387,23 @@ function gerarRelatorioRes() {
     porRef.almoco + porRef.cafe + porRef.jantar);
 
   // ── Top observações ───────────────────────────────────────
-  const stop = new Set(['de','a','o','e','em','para','com','que','do','da','no','na',
-    'um','uma','os','as','se','foi','por','mais','mas','não','já','bem','como',
-    'esse','ao','dos','das','pelo','pela','este','esta','quando','sobre','sua','seu']);
+  const stop = new Set([
+    // Artigos, preposições, contrações
+    'de','a','o','e','em','para','com','que','do','da','no','na','ao','um','uma',
+    'os','as','dos','das','nos','nas','pelo','pela','pelos','pelas','num','numa',
+    // Pronomes
+    'se','eu','tu','ele','ela','nós','eles','elas','me','te','lhe','nos','meu',
+    'minha','sua','seu','esse','esta','esta','esse','isso','isto','aqui',
+    // Verbos auxiliares
+    'foi','ser','ter','tem','são','está','era','são','há','tinha','sendo',
+    // Conjunções e advérbios sem valor analítico
+    'mas','mais','não','já','bem','como','sim','também','ainda','assim',
+    'então','quando','sobre','porque','pois','porém','logo','contudo',
+    // Palavras genéricas sem valor analítico em observações de restaurante
+    'além','disso','muito','pouco','sempre','nunca','todo','toda','todos','todas',
+    'mesmo','mesma','cada','qual','outro','outra','onde','tanto','até','desde',
+    'este','esta','esse','essa','esses','essas','estes','estas',
+  ]);
   const freq = {};
   d.forEach(r => {
     if (!r.observacoes?.trim()) return;
@@ -415,20 +429,279 @@ function gerarRelatorioRes() {
   };
 
   // ── Insights automáticos ──────────────────────────────────
+  // Indicadores do período anterior para comparação
+  const dAnt = STATE.dadosAnt || [];
+  const pctPosAnt = calcPctPos(dAnt);
+  const mGeralAnt = calcMedia(dAnt);
+
   const insights = [];
   const pctPos = calcPctPos(d), pctNeg = calcPctNeg(d);
+
+  // Satisfação geral com comparação ao período anterior
   if (pctPos !== null) {
-    if (pctPos >= 80) insights.push('Satisfação geral elevada (' + pctPos + '% positivas). Manter padrão operacional.');
-    else if (pctPos >= 60) insights.push('Satisfação moderada (' + pctPos + '% positivas). Investigar pontos de queda.');
-    else insights.push('Satisfação crítica (' + pctPos + '% positivas). Plano de ação necessário.');
+    let ins = '';
+    if (pctPos >= 80)      ins = 'Verificou-se satisfação geral elevada no período, com ' + pctPos + '% das avaliações classificadas como positivas (Ótimo ou Bom).';
+    else if (pctPos >= 60) ins = 'Verificou-se satisfação moderada no período, com ' + pctPos + '% das avaliações positivas, demandando atenção continuada.';
+    else                   ins = 'Constatou-se baixo índice de satisfação no período (' + pctPos + '% positivas), requerendo plano de ação imediato.';
+    if (pctPosAnt !== null && dAnt.length >= 5) {
+      const diff = pctPos - pctPosAnt;
+      if (Math.abs(diff) >= 3) {
+        ins += diff > 0
+          ? ' Registrou-se melhora de ' + Math.abs(diff) + ' pontos percentuais em relação ao período anterior (' + pctPosAnt + '%).'
+          : ' Registrou-se queda de ' + Math.abs(diff) + ' pontos percentuais em relação ao período anterior (' + pctPosAnt + '%).';
+      }
+    }
+    insights.push(ins);
   }
-  if (mRef !== null && mRef < 2.5) insights.push('Qualidade da refeição com média crítica (' + fmt2(mRef) + '). Revisar cardápio e preparo.');
-  if (mAtend !== null && mAtend < 2.5) insights.push('Atendimento com média crítica (' + fmt2(mAtend) + '). Avaliar capacitação da equipe.');
-  if (mAmb !== null && mAmb < 2.5) insights.push('Ambiente com média crítica (' + fmt2(mAmb) + '). Verificar limpeza e infraestrutura.');
-  if (pctNeg !== null && pctNeg > 10) insights.push(pctNeg + '% das avaliações são "Ruim". Identificar causa raiz com urgência.');
-  if (!insights.length) insights.push('Indicadores dentro dos parâmetros esperados no período analisado.');
+
+  // Média geral com comparação
+  if (mGeral !== null) {
+    if (mGeral < 2.5) {
+      let ins = 'A média geral das avaliações (' + fmt2(mGeral) + ') encontra-se em nível crítico.';
+      if (mGeralAnt !== null && dAnt.length >= 5) {
+        const diff = parseFloat((mGeral - mGeralAnt).toFixed(2));
+        ins += diff > 0
+          ? ' Há evolução positiva de ' + Math.abs(diff).toFixed(2).replace('.',',') + ' pontos em relação ao período anterior.'
+          : diff < 0
+            ? ' Verifica-se queda de ' + Math.abs(diff).toFixed(2).replace('.',',') + ' pontos em relação ao período anterior.'
+            : ' O desempenho manteve-se estável em relação ao período anterior.';
+      }
+      insights.push(ins);
+    }
+  }
+
+  // Critérios específicos
+  if (mRef !== null && mRef < 2.5)   insights.push('A Qualidade da Refeição apresentou média crítica (' + fmt2(mRef) + '), requerendo verificação dos processos de distribuição e temperatura.');
+  if (mAtend !== null && mAtend < 2.5) insights.push('O Atendimento apresentou média crítica (' + fmt2(mAtend) + '), requerendo avaliação da postura e cordialidade dos colaboradores.');
+  if (mAmb !== null && mAmb < 2.5)   insights.push('O Ambiente apresentou média crítica (' + fmt2(mAmb) + '), requerendo verificação das condições de limpeza e infraestrutura.');
+  if (pctNeg !== null && pctNeg > 10) insights.push('Verificou-se que ' + pctNeg + '% das notas registradas foram "Ruim", percentual que demanda identificação imediata da causa raiz.');
+  if (!insights.length) insights.push('Verificou-se que os indicadores do período encontram-se dentro dos parâmetros esperados, sem registro de ocorrências críticas.');
 
   // ── HTML do relatório ─────────────────────────────────────
+
+  // ── Pré-calcular textos das seções analíticas ─────────────
+  // (evita backticks aninhados no template literal do HTML)
+
+  // ── Texto 2.2 — Síntese geral ─────────────────────────────
+  let texto22 = '';
+  if (pctPos === null) {
+    texto22 = 'não foi possível calcular os percentuais para o período selecionado.';
+  } else if (pctPos >= 70) {
+    texto22 = 'predominaram avaliações positivas, com ' + pctPos + '% das notas'
+      + ' classificadas como Ótimo ou Bom, indicando satisfação adequada dos usuários no período.';
+  } else if (pctPos >= 50) {
+    texto22 = 'houve equilíbrio entre avaliações positivas e negativas/regulares ('
+      + pctPos + '% positivas), demandando atenção quanto à qualidade dos serviços.';
+  } else {
+    texto22 = 'há presença relevante de avaliações negativas e regulares ('
+      + (100 - pctPos) + '% do total), o que requer atenção imediata por parte da empresa contratada.';
+  }
+
+
+  // (evita backticks aninhados no template literal do HTML)
+
+  // ── Texto 2.3 — Análise por critério ──────────────────────
+  let texto23 = '';
+  {
+    const cats = [
+      { nome: 'Qualidade da Refeição',    v: mRef   },
+      { nome: 'Qualidade do Atendimento', v: mAtend },
+      { nome: 'Qualidade do Ambiente',    v: mAmb   },
+    ].filter(c => c.v !== null).sort((a,b) => b.v - a.v);
+
+    if (!cats.length) {
+      texto23 = 'Não há dados suficientes para análise por critério.';
+    } else {
+      const melhor = cats[0];
+      const pior23 = cats[cats.length - 1];
+      const dif    = (melhor.v - pior23.v).toFixed(2).replace('.', ',');
+      const classPior = pior23.v >= 3.0 ? 'Bom'
+        : pior23.v >= 2.5 ? 'Regular — requer atenção'
+        : 'Crítico — requer ação imediata';
+
+      texto23 = 'Dentre os critérios avaliados, "' + melhor.nome + '" apresentou o melhor desempenho'
+        + ' (média ' + fmt2(melhor.v) + '), enquanto "' + pior23.nome + '" registrou a menor média'
+        + ' (' + fmt2(pior23.v) + '), classificada como ' + classPior + '. ';
+
+      if (parseFloat(dif.replace(',', '.')) >= 0.20) {
+        texto23 += 'A diferença de ' + dif + ' pontos entre o melhor e o pior critério indica'
+          + ' desempenho desigual entre os aspectos avaliados.';
+      } else {
+        texto23 += 'A variação de ' + dif + ' pontos entre os critérios indica desempenho'
+          + ' relativamente homogêneo no período.';
+      }
+
+      if (pior23.v < 2.5) {
+        if (pior23.nome.includes('Refeição'))
+          texto23 += ' Recomenda-se verificar a temperatura de distribuição e o tempo entre o preparo e o serviço.';
+        if (pior23.nome.includes('Atendimento'))
+          texto23 += ' Recomenda-se avaliação da postura e cordialidade dos colaboradores.';
+        if (pior23.nome.includes('Ambiente'))
+          texto23 += ' Recomenda-se verificar as condições de limpeza e funcionamento dos sanitários.';
+      }
+
+      const todosCriticos = cats.every(c => c.v < 3.0);
+      if (todosCriticos) {
+        texto23 += ' Ressalta-se que todos os critérios avaliados situaram-se abaixo da faixa'
+          + ' satisfatória (média inferior a 3,00), indicando necessidade de plano de ação integrado.';
+      }
+    }
+  }
+
+  // ── Texto 2.4 — Análise por período ───────────────────────
+  let texto24 = '';
+  {
+    const totalRef24 = porRef.almoco + porRef.cafe + porRef.jantar;
+    if (totalRef24 < 1) {
+      texto24 = 'Não há dados suficientes para análise por período de refeição.';
+    } else {
+      const periodos24 = [
+        { nome: 'Almoço',        val: porRef.almoco, pct: pctsRef[0] },
+        { nome: 'Café da Manhã', val: porRef.cafe,   pct: pctsRef[1] },
+        { nome: 'Jantar',        val: porRef.jantar, pct: pctsRef[2] },
+      ].filter(p => p.val > 0).sort((a,b) => b.val - a.val);
+
+      const maior24 = periodos24[0];
+      const segundo = periodos24[1];
+      const menor24 = periodos24[periodos24.length - 1];
+
+      texto24 = 'O período de "' + maior24.nome + '" concentrou o maior volume de avaliações ('
+        + maior24.val + ' registros — ' + maior24.pct + '% do total)';
+
+      if (segundo && segundo !== maior24) {
+        texto24 += ', seguido de "' + segundo.nome + '" (' + segundo.val + ' — ' + segundo.pct + '%).';
+      } else {
+        texto24 += '.';
+      }
+
+      if (menor24 !== maior24 && menor24.pct <= 15) {
+        texto24 += ' O período de "' + menor24.nome + '" registrou participação reduzida'
+          + ' (' + menor24.val + ' avaliações — ' + menor24.pct + '%), o que pode indicar'
+          + ' menor fluxo de usuários nesse turno ou necessidade de verificar o funcionamento do ponto de coleta.';
+      }
+
+      if (menor24.val < 10) {
+        texto24 += ' Em virtude do volume reduzido de registros, os dados desse período'
+          + ' devem ser interpretados com cautela.';
+      }
+    }
+  }
+
+  // ── Texto 4.2 — Critério mais crítico ─────────────────────
+  let texto42 = '';
+  {
+    const cats42 = [
+      { nome: 'Qualidade da Refeição',    v: mRef,   campo: 'refeicao'    },
+      { nome: 'Qualidade do Atendimento', v: mAtend, campo: 'atendimento' },
+      { nome: 'Qualidade do Ambiente',    v: mAmb,   campo: 'ambiente'    },
+    ].filter(c => c.v !== null).sort((a,b) => a.v - b.v);
+
+    if (!cats42.length) {
+      texto42 = 'Não há dados suficientes para análise por critério.';
+    } else {
+      const pior42 = cats42[0];
+      const ruimCampo = d.reduce((acc, reg) => {
+        return acc + (reg[pior42.campo] === 'Ruim' ? 1 : 0);
+      }, 0);
+      const pctRuimCampo = totalAv > 0 ? Math.round(ruimCampo / totalAv * 100) : 0;
+
+      const nivel42 = pior42.v < 2.5
+        ? 'em nível crítico, requerendo ação imediata'
+        : pior42.v < 3.0
+          ? 'abaixo da faixa satisfatória, requerendo atenção'
+          : 'dentro da faixa aceitável, porém com espaço para melhoria';
+
+      let recom42 = '';
+      if (pior42.campo === 'refeicao')
+        recom42 = 'Recomenda-se verificar a temperatura de distribuição, o tempo entre o preparo e o serviço, bem como o porcionamento das preparações.';
+      if (pior42.campo === 'atendimento')
+        recom42 = 'Recomenda-se avaliação da postura, pontualidade e cordialidade dos colaboradores no atendimento aos usuários.';
+      if (pior42.campo === 'ambiente')
+        recom42 = 'Recomenda-se verificar as condições de limpeza do salão, organização das mesas e funcionamento dos sanitários.';
+
+      texto42 = 'O critério "' + pior42.nome + '" registrou a menor média do período'
+        + ' (' + fmt2(pior42.v) + '), situando-se ' + nivel42 + '. '
+        + 'Foram contabilizadas ' + ruimCampo + ' notas "Ruim" para esse critério'
+        + ' (' + pctRuimCampo + '% do total de notas válidas). ' + recom42;
+    }
+  }
+
+  // ── Texto 4.3 — Análise das observações ───────────────────
+  let texto43 = '';
+  {
+    if (!topObs.length) {
+      texto43 = 'Não foram registradas observações textuais no período selecionado.';
+    } else {
+      const obsNeg43 = d.filter(reg =>
+        reg.observacoes && reg.observacoes.trim() &&
+        [reg.refeicao, reg.atendimento, reg.ambiente].some(n => ['Regular','Ruim'].includes(n))
+      ).length;
+      const pctObsNeg43 = obsComTexto.length > 0
+        ? Math.round(obsNeg43 / obsComTexto.length * 100) : 0;
+
+      const top3 = topObs.slice(0, 3).map(([w]) => '"' + w + '"').join(', ');
+
+      const palavras43 = topObs.map(([w]) => w.toLowerCase());
+      const temas43 = [];
+      if (palavras43.some(w => ['frio','quente','temperatura','morno'].includes(w)))
+        temas43.push('problemas na temperatura de distribuição das refeições');
+      if (palavras43.some(w => ['banheiro','sanitário','limpeza','sujo','higiene'].includes(w)))
+        temas43.push('condições higiênico-sanitárias do ambiente');
+      if (palavras43.some(w => ['atendimento','demora','fila','espera','tempo','lento'].includes(w)))
+        temas43.push('tempo de espera e qualidade do atendimento');
+      if (palavras43.some(w => ['porção','pouco','quantidade','aguado','insosso'].includes(w)))
+        temas43.push('porcionamento e qualidade sensorial das preparações');
+
+      texto43 = 'Das ' + obsComTexto.length + ' observações textuais registradas, '
+        + obsNeg43 + ' (' + pctObsNeg43 + '%) acompanharam avaliações negativas ou regulares. '
+        + 'Os termos mais frequentes foram ' + top3 + ', sugerindo ';
+
+      if (temas43.length > 1) {
+        texto43 += temas43.slice(0, -1).join(', ') + ' e ' + temas43[temas43.length - 1] + '.';
+      } else if (temas43.length === 1) {
+        texto43 += temas43[0] + '.';
+      } else {
+        texto43 += 'a necessidade de investigação mais detalhada junto aos usuários.';
+      }
+    }
+  }
+
+  // ── Texto 4.4 — Período mais crítico ──────────────────────
+  let texto44 = '';
+  {
+    const totalRef44 = porRef.almoco + porRef.cafe + porRef.jantar;
+    if (totalRef44 < 10) {
+      texto44 = 'Volume de dados insuficiente para análise de desempenho por período de refeição.';
+    } else {
+      const negPer44 = ['cafe','almoco','jantar'].map(p => {
+        const regPer = d.filter(reg => normPeriodo(reg.periodo) === p);
+        if (regPer.length < 5) return { p, pct: null, total: regPer.length };
+        const totAp = regPer.reduce((a,reg) =>
+          a + [reg.refeicao,reg.atendimento,reg.ambiente].filter(notaValida).length, 0);
+        const negAp = regPer.reduce((a,reg) =>
+          a + [reg.refeicao,reg.atendimento,reg.ambiente].filter(n=>n==='Ruim').length, 0);
+        return { p, pct: totAp > 0 ? Math.round(negAp/totAp*100) : 0, total: regPer.length };
+      }).filter(x => x.pct !== null).sort((a,b) => b.pct - a.pct);
+
+      if (!negPer44.length) {
+        texto44 = 'Não há dados suficientes em todos os períodos para comparação. Recomenda-se ampliar o período de coleta para análise mais representativa.';
+      } else if (negPer44.every(x => x.pct === 0)) {
+        texto44 = 'Nenhum dos períodos registrou avaliações "Ruim" no período analisado, indicando ausência de insatisfação extrema entre os usuários.';
+      } else {
+        const piorPer = negPer44[0];
+        texto44 = 'O período de "' + nomePeriodo(piorPer.p) + '" registrou a maior proporção'
+          + ' de notas "Ruim" (' + piorPer.pct + '% das notas válidas desse turno — '
+          + piorPer.total + ' avaliações). ';
+        if (piorPer.pct > 15)
+          texto44 += 'O percentual acima de 15% é considerado crítico e recomenda-se atenção prioritária às condições de serviço nesse turno.';
+        else if (piorPer.pct > 5)
+          texto44 += 'O percentual indica necessidade de monitoramento continuado nesse período.';
+        else
+          texto44 += 'O percentual encontra-se dentro de limites aceitáveis, mas merece acompanhamento.';
+      }
+    }
+  }
+
   const html = `<!DOCTYPE html>
 <html lang="pt-br">
 <head>
@@ -694,6 +967,10 @@ function gerarRelatorioRes() {
   </div>
 
   <div class="titulo-relatorio">Relatório Técnico de Monitoramento da Satisfação dos Usuários</div>
+  <p style="text-align:center;font-size:10pt;color:#444;margin-bottom:4px">
+    Período de referência: ${fmtFiltro(dataIni)} a ${fmtFiltro(dataFim)}
+    ${periodo ? ' | Refeição: ' + periodoTxt : ''}
+  </p>
 
   <!-- Linha em branco + processo -->
   <p style="margin:0">&nbsp;</p>
@@ -724,23 +1001,27 @@ function gerarRelatorioRes() {
     <div class="secao-body">
       <p class="item">2.1. Procedeu-se à consolidação das informações obtidas no período, conforme apresentado a seguir:</p>
 
-      <!-- KPIs -->
+      <!-- KPIs com referência de meta -->
       <div class="kpi-row">
         <div class="kpi">
           <span class="kpi-val">${total}</span>
           <span class="kpi-lbl">Total de Avaliações</span>
+          <span style="font-size:7.5pt;color:#888;display:block;margin-top:3px">no período filtrado</span>
         </div>
         <div class="kpi" style="border-top-color:#059669">
-          <span class="kpi-val" style="color:#059669">${pctPos !== null ? pctPos + '%' : '—'}</span>
+          <span class="kpi-val" style="color:${pctPos !== null && pctPos >= 70 ? '#059669' : '#e11d48'}">${pctPos !== null ? pctPos + '%' : '—'}</span>
           <span class="kpi-lbl">Positivas (Ótimo+Bom)</span>
+          <span style="font-size:7.5pt;color:#888;display:block;margin-top:3px">meta: ≥ 70%</span>
         </div>
         <div class="kpi" style="border-top-color:#d97706">
           <span class="kpi-val" style="color:#d97706">${pctStr(nRegular, totalAv)}</span>
           <span class="kpi-lbl">Regulares</span>
+          <span style="font-size:7.5pt;color:#888;display:block;margin-top:3px">referência: ≤ 20%</span>
         </div>
         <div class="kpi" style="border-top-color:#e11d48">
-          <span class="kpi-val" style="color:#e11d48">${pctNeg !== null ? pctNeg + '%' : '—'}</span>
+          <span class="kpi-val" style="color:${pctNeg !== null && pctNeg > 10 ? '#e11d48' : '#059669'}">${pctNeg !== null ? pctNeg + '%' : '—'}</span>
           <span class="kpi-lbl">Negativas (Ruim)</span>
+          <span style="font-size:7.5pt;color:#888;display:block;margin-top:3px">alerta: > 10%</span>
         </div>
       </div>
 
@@ -793,21 +1074,25 @@ function gerarRelatorioRes() {
           <th class="num">Média</th>
           <th>Classificação</th>
         </tr>
-        <tr>
-          <td>Qualidade da Refeição</td>
-          <td class="num">${fmt2(mRef)}</td>
-          <td>${classificar(mRef)}</td>
-        </tr>
-        <tr>
-          <td>Qualidade do Atendimento</td>
-          <td class="num">${fmt2(mAtend)}</td>
-          <td>${classificar(mAtend)}</td>
-        </tr>
-        <tr>
-          <td>Qualidade do Ambiente</td>
-          <td class="num">${fmt2(mAmb)}</td>
-          <td>${classificar(mAmb)}</td>
-        </tr>
+        ${[
+          { nome: 'Qualidade da Refeição',    v: mRef   },
+          { nome: 'Qualidade do Atendimento', v: mAtend },
+          { nome: 'Qualidade do Ambiente',    v: mAmb   },
+        ].map(c => {
+          const menorMedia = Math.min(
+            ...[mRef,mAtend,mAmb].filter(x=>x!==null)
+          );
+          const ePior = c.v !== null && c.v === menorMedia;
+          const bgStyle = ePior && c.v < 3.0
+            ? 'background:#fff8f0'
+            : '';
+          const suffixPior = ePior && c.v < 3.0 ? ' ⚠' : '';
+          return '<tr style="' + bgStyle + '">'
+            + '<td>' + c.nome + suffixPior + '</td>'
+            + '<td class="num">' + (c.v !== null ? fmt2(c.v) : '—') + '</td>'
+            + '<td>' + classificar(c.v) + '</td>'
+            + '</tr>';
+        }).join('')}
         <tr style="background:#e8edf5;font-weight:bold">
           <td>Média Geral</td>
           <td class="num">${fmt2(mGeral)}</td>
@@ -840,89 +1125,17 @@ function gerarRelatorioRes() {
         </tr>
       </table>
 
-      <p class="item">2.2. Da análise dos dados, verificou-se que ${
-        pctPos !== null
-          ? pctPos >= 70
-            ? `predominaram avaliações positivas, com \${pctPos}% das notas classificadas como Ótimo ou Bom, indicando satisfação adequada dos usuários no período.`
-            : pctPos >= 50
-              ? `houve equilíbrio entre avaliações positivas e negativas/regulares (\${pctPos}% positivas), demandando atenção quanto à qualidade dos serviços.`
-              : `há presença relevante de avaliações negativas e regulares (\${100 - pctPos}% do total), o que requer atenção imediata por parte da empresa contratada.`
-          : 'não foi possível calcular os percentuais para o período selecionado.'
-      }</p>
+      <p class="item">2.2. ${texto22}</p>
 
       <!-- ── 2.3 Análise por critério ── -->
-      <p class="item">2.3. ${(() => {
-        const cats = [
-          { nome: 'Qualidade da Refeição',    v: mRef   },
-          { nome: 'Qualidade do Atendimento', v: mAtend },
-          { nome: 'Qualidade do Ambiente',    v: mAmb   },
-        ].filter(c => c.v !== null).sort((a,b) => b.v - a.v);
+      <p class="item">2.3. ${texto23}</p>
 
-        if (!cats.length) return 'Não há dados suficientes para análise por critério.';
-
-        const melhor = cats[0];
-        const pior   = cats[cats.length - 1];
-        const dif    = (melhor.v - pior.v).toFixed(2).replace('.',',');
-
-        const classPior = pior.v >= 3.0 ? 'Bom'
-          : pior.v >= 2.5 ? 'Regular — requer atenção'
-          : 'Crítico — requer ação imediata';
-
-        let texto = `Dentre os critérios avaliados, "\${melhor.nome}" apresentou o melhor desempenho `
-          + `(média \${fmt2(melhor.v)}), enquanto "\${pior.nome}" registrou a menor média (\${fmt2(pior.v)}), `
-          + `classificada como \${classPior}. `;
-
-        if (parseFloat(dif.replace(',','.')) >= 0.20) {
-          texto += `A diferença de \${dif} pontos entre o melhor e o pior critério indica `
-            + `desempenho desigual entre os aspectos avaliados.`;
-        } else {
-          texto += `A variação de \${dif} pontos entre os critérios indica desempenho relativamente homogêneo no período.`;
-        }
-
-        if (pior.v < 2.5) {
-          if (pior.nome.includes('Refeição'))    texto += ' Recomenda-se verificar a temperatura de distribuição e o tempo entre o preparo e o serviço.';
-          if (pior.nome.includes('Atendimento')) texto += ' Recomenda-se avaliação da postura e da cordialidade dos colaboradores no momento da distribuição.';
-          if (pior.nome.includes('Ambiente'))    texto += ' Recomenda-se verificar as condições de limpeza, organização do salão e funcionamento dos sanitários.';
-        }
-
-        const todosCriticos = cats.every(c => c.v < 3.0);
-        if (todosCriticos) {
-          texto += ' Ressalta-se que todos os critérios avaliados situaram-se abaixo da faixa satisfatória (média inferior a 3,00), indicando necessidade de plano de ação integrado.';
-        }
-
-        return texto;
-      })()}</p>
-
-      <!-- ── 2.4 Análise por período de refeição ── -->
-      <p class="item">2.4. ${(() => {
-        const totalRef = porRef.almoco + porRef.cafe + porRef.jantar;
-        if (!totalRef) return 'Não há dados suficientes para análise por período de refeição.';
-
-        const periodos = [
-          { nome: 'Almoço',        val: porRef.almoco, pct: pctsRef[0] },
-          { nome: 'Café da Manhã', val: porRef.cafe,   pct: pctsRef[1] },
-          { nome: 'Jantar',        val: porRef.jantar, pct: pctsRef[2] },
-        ].filter(p => p.val > 0).sort((a,b) => b.val - a.val);
-
-        const maior = periodos[0];
-        const menor = periodos[periodos.length - 1];
-
-        let texto = `O período de "\${maior.nome}" concentrou o maior volume de avaliações `
-          + `(\${maior.val} registros — \${maior.pct}% do total), `
-          + `seguido de "\${periodos[1]?.nome}" (\${periodos[1]?.val} — \${periodos[1]?.pct}%).`;
-
-        if (menor.pct <= 15) {
-          texto += ` O período de "\${menor.nome}" registrou participação reduzida (\${menor.val} avaliações — \${menor.pct}%), `
-            + `o que pode indicar menor fluxo de usuários nesse turno ou necessidade de verificar o funcionamento do ponto de coleta.`;
-        }
-
-        if (menor.val < 10) {
-          texto += ` Em virtude do volume reduzido de registros, os dados desse período devem ser interpretados com cautela.`;
-        }
-
-        return texto;
-      })()}</p>
+      <!-- ── 2.4 Análise por período ── -->
+      <p class="item">2.4. ${texto24}</p>
     </div>
+  </div>
+
+  <!-- ── 3. Principais Manifestações    </div>
   </div>
 
   <!-- ── 3. Principais Manifestações ── -->
@@ -952,114 +1165,15 @@ function gerarRelatorioRes() {
         </div>`;
       }).join('')}
       <!-- ── 4.2 Critério mais crítico ── -->
-      <p class="item" style="margin-top:10px">4.2. ${(() => {
-        const cats = [
-          { nome: 'Qualidade da Refeição',    v: mRef,   campo: 'refeicao'    },
-          { nome: 'Qualidade do Atendimento', v: mAtend, campo: 'atendimento' },
-          { nome: 'Qualidade do Ambiente',    v: mAmb,   campo: 'ambiente'    },
-        ].filter(c => c.v !== null).sort((a,b) => a.v - b.v);
-
-        if (!cats.length) return 'Não há dados suficientes para análise por critério.';
-        const pior = cats[0];
-
-        // Contar notas ruim por campo
-        const ruimPorCampo = d.reduce((acc, reg) => {
-          if (reg[pior.campo] === 'Ruim') acc++;
-          return acc;
-        }, 0);
-        const pctRuimCampo = totalAv > 0 ? Math.round(ruimPorCampo / totalAv * 100) : 0;
-
-        let recomendacao = '';
-        if (pior.campo === 'refeicao')    recomendacao = 'Recomenda-se verificar a temperatura de distribuição, o tempo entre o preparo e o serviço, bem como o porcionamento das preparações.';
-        if (pior.campo === 'atendimento') recomendacao = 'Recomenda-se avaliação da postura, pontualidade e cordialidade dos colaboradores no atendimento aos usuários.';
-        if (pior.campo === 'ambiente')    recomendacao = 'Recomenda-se verificar as condições de limpeza do salão, organização das mesas e funcionamento dos sanitários.';
-
-        const nivel = pior.v < 2.5
-          ? 'em nível crítico, requerendo ação imediata'
-          : pior.v < 3.0
-            ? 'abaixo da faixa satisfatória, requerendo atenção'
-            : 'dentro da faixa aceitável, porém com espaço para melhoria';
-
-        return `O critério "\${pior.nome}" registrou a menor média do período (\${fmt2(pior.v)}), situando-se \${nivel}. `
-          + `Foram contabilizadas \${ruimPorCampo} notas "Ruim" para esse critério (\${pctRuimCampo}% do total de notas válidas). \${recomendacao}`;
-      })()}</p>
+      <p class="item" style="margin-top:10px">4.2. ${texto42}</p>
 
       <!-- ── 4.3 Análise das observações ── -->
-      <p class="item">4.3. ${(() => {
-        if (!topObs.length) return 'Não foram registradas observações textuais no período selecionado.';
+      <p class="item">4.3. ${texto43}</p>
 
-        const obsNeg = d.filter(reg =>
-          reg.observacoes?.trim() &&
-          [reg.refeicao, reg.atendimento, reg.ambiente].some(n => ['Regular','Ruim'].includes(n))
-        ).length;
-        const pctObsNeg = obsComTexto.length > 0
-          ? Math.round(obsNeg / obsComTexto.length * 100) : 0;
+      <!-- ── 4.4 Período mais crítico ── -->
+      <p class="item">4.4. ${texto44}</p>
 
-        const top3 = topObs.slice(0,3).map(([w]) => `"\${w}"`).join(', ');
-
-        let texto = `Das \${obsComTexto.length} observações textuais registradas, \${obsNeg} (\${pctObsNeg}%) acompanharam avaliações negativas ou regulares. `
-          + `Os termos mais frequentes foram \${top3}, sugerindo `;
-
-        // Interpretar palavras-chave
-        const palavras = topObs.map(([w]) => w.toLowerCase());
-        const temas = [];
-        if (palavras.some(w => ['frio','quente','temperatura','morno'].includes(w)))
-          temas.push('problemas na temperatura de distribuição das refeições');
-        if (palavras.some(w => ['banheiro','sanitário','limpeza','sujo','higiene'].includes(w)))
-          temas.push('condições higiênico-sanitárias do ambiente');
-        if (palavras.some(w => ['atendimento','demora','fila','espera','tempo','lento'].includes(w)))
-          temas.push('tempo de espera e qualidade do atendimento');
-        if (palavras.some(w => ['porção','pouco','quantidade','aguado','insosso'].includes(w)))
-          temas.push('porcionamento e qualidade sensorial das preparações');
-
-        if (temas.length) {
-          texto += temas.join(' e ') + '.';
-        } else {
-          texto += 'a necessidade de investigação mais detalhada junto aos usuários.';
-        }
-
-        return texto;
-      })()}</p>
-
-      <!-- ── 4.4 Período com maior atenção ── -->
-      <p class="item">4.4. ${(() => {
-        const totalRef = porRef.almoco + porRef.cafe + porRef.jantar;
-        if (totalRef < 10) return 'Volume de dados insuficiente para análise de desempenho por período de refeição.';
-
-        // Calcular % negativas por período
-        const negPorPeriodo = ['cafe','almoco','jantar'].map(p => {
-          const regPer = d.filter(reg => normPeriodo(reg.periodo) === p);
-          if (regPer.length < 5) return { p, pct: null, total: regPer.length };
-          const totalAp = regPer.reduce((a,r) =>
-            a + [r.refeicao,r.atendimento,r.ambiente].filter(notaValida).length, 0);
-          const negAp = regPer.reduce((a,r) =>
-            a + [r.refeicao,r.atendimento,r.ambiente].filter(n=>n==='Ruim').length, 0);
-          return { p, pct: totalAp > 0 ? Math.round(negAp/totalAp*100) : 0, total: regPer.length };
-        }).filter(x => x.pct !== null).sort((a,b) => b.pct - a.pct);
-
-        if (!negPorPeriodo.length)
-          return 'Não há dados suficientes em todos os períodos para comparação. Recomenda-se ampliar o período de coleta para análise mais representativa.';
-
-        const pior  = negPorPeriodo[0];
-        const nomeP = nomePeriodo(pior.p);
-
-        if (pior.pct === 0 && negPorPeriodo.every(x => x.pct === 0))
-          return 'Nenhum dos períodos registrou avaliações "Ruim" no período analisado, indicando ausência de insatisfação extrema entre os usuários.';
-
-        let texto = `O período de "\${nomeP}" registrou a maior proporção de notas "Ruim" (\${pior.pct}% das notas válidas desse turno — \${pior.total} avaliações). `;
-
-        if (pior.pct > 15) {
-          texto += `O percentual acima de 15% é considerado crítico e recomenda-se atenção prioritária às condições de serviço nesse turno.`;
-        } else if (pior.pct > 5) {
-          texto += `O percentual indica necessidade de monitoramento continuado nesse período.`;
-        } else {
-          texto += `O percentual encontra-se dentro de limites aceitáveis, mas merece acompanhamento.`;
-        }
-
-        return texto;
-      })()}</p>
-
-      <p class="item" style="margin-top:10px">4.5. Ressalta-se que os apontamentos acima deverão ser avaliados pela empresa contratada, com vistas à adoção de medidas corretivas e preventivas quando aplicável.</p>
+            <p class="item" style="margin-top:10px">4.5. Ressalta-se que os apontamentos acima deverão ser avaliados pela empresa contratada, com vistas à adoção de medidas corretivas e preventivas quando aplicável.</p>
     </div>
   </div>
 
@@ -1072,7 +1186,8 @@ function gerarRelatorioRes() {
     </div>
   </div>
 
-  <!-- ── 6. Encaminhamento ── -->
+  <!-- ── 6. Encaminhamento + Assinaturas (mesma página) ── -->
+  <div style="page-break-inside: avoid">
   <div class="secao">
     <div class="secao-titulo">6. Encaminhamento</div>
     <div class="secao-body">
@@ -1091,11 +1206,13 @@ function gerarRelatorioRes() {
         <!-- Emissor -->
         <td style="width:47%;border:none;text-align:center;vertical-align:bottom;padding:0 8px 0 0">
           <div style="border-top:1px solid #000;padding-top:6px;margin-top:60px">
-            <p style="font-size:10pt;font-weight:bold;line-height:1.5;margin:0">
-              Gerência Regional de Segurança Alimentar<br>e Nutricional de Sobradinho
+            <p style="font-size:9pt;color:#333;margin:0 0 2px">Nome: _________________________________</p>
+            <p style="font-size:9pt;color:#333;margin:2px 0">Matrícula/SIAPE: _______________________</p>
+            <p style="font-size:9pt;color:#333;margin:2px 0">Cargo: ________________________________</p>
+            <p style="font-size:10pt;font-weight:bold;line-height:1.5;margin:8px 0 2px;text-align:center">
+              Gerência Regional de Segurança Alimentar<br>e Nutricional de Sobradinho — GERSANSOB
             </p>
-            <p style="font-size:9pt;color:#333;margin:2px 0 0">Responsável pela emissão</p>
-            <p style="font-size:9pt;color:#333;margin:4px 0 0">Data: ___/___/______</p>
+            <p style="font-size:9pt;color:#333;margin:4px 0 0;text-align:center">Data: ___/___/______</p>
           </div>
         </td>
         <!-- Espaçador -->
@@ -1115,9 +1232,12 @@ function gerarRelatorioRes() {
     </table>
   </div>
 
+  </div><!-- /encaminhamento+assinaturas -->
+
   <!-- ── Rodapé ── -->
   <div class="rodape">
     <p>AR 13 — Área Especial 08 — Quadra 03 — Região Administrativa de Sobradinho | Tel.: (61) 3773-7649 | www.sedes.df.gov.br</p>
+    <p style="margin-top:3px;font-size:8pt">Processo nº: 00431-00008473/2026-87 | Gerado em: ${hoje} às ${agora}</p>
     <div class="aviso-lgpd">
       Este documento contém exclusivamente dados agregados e anônimos. Nenhum dado pessoal identificável foi incluído, em conformidade com a Lei nº 13.709/2018 (LGPD).
     </div>
