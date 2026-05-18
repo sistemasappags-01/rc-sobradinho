@@ -1268,148 +1268,28 @@ function gerarRelatorioRes() {
 }
 
 // ── Exportar CSV ──────────────────────────────────────────
-// ── Exportar CSV — duas versões por perfil ───────────────────────
-// ANALÍTICA (padrão): sem nome/telefone — adequada à LGPD
-// NOMINAL (somente admin, com confirmação): inclui dados pessoais
 function exportarCSVRes() {
+  // Bloqueio extra: visualizador não pode exportar mesmo que chame a função direto
   if (document.body.classList.contains('perfil-visualizador')) {
-    console.warn('Acesso negado: visualizador não pode exportar.');
+    console.warn('Acesso negado: perfil visualizador não pode exportar dados.');
     return;
   }
-  const isAdmin = STATE.perfil?.perfil === 'admin';
-  if (isAdmin) {
-    // Admin escolhe entre versão analítica ou nominal
-    const modal = document.createElement('div');
-    modal.id = 'csv-modal-escolha';
-    modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:9999;display:flex;align-items:center;justify-content:center;font-family:\'DM Sans\',sans-serif';
-    modal.innerHTML =
-      '<div style="background:#fff;border-radius:16px;padding:28px 32px;max-width:480px;width:90%;box-shadow:0 8px 32px rgba(0,0,0,.18)">' +
-        '<h3 style="font-family:\'Sora\',sans-serif;font-size:16px;font-weight:800;color:#0f2650;margin:0 0 8px">Exportar CSV</h3>' +
-        '<p style="font-size:13px;color:#475569;margin:0 0 20px">Escolha o tipo de exportação:</p>' +
-        '<div style="display:flex;flex-direction:column;gap:10px;margin-bottom:20px">' +
-          '<label style="display:flex;align-items:flex-start;gap:10px;padding:12px 14px;border:1.5px solid #e2e8f0;border-radius:10px;cursor:pointer">' +
-            '<input type="radio" name="csv-tipo" value="analitica" checked style="margin-top:3px;flex-shrink:0">' +
-            '<div>' +
-              '<div style="font-size:13px;font-weight:700;color:#1a3a6e">Analítica (recomendada)</div>' +
-              '<div style="font-size:12px;color:#64748b;margin-top:2px">Data, Período, Notas, Classificação e Observações — sem Nome ou Telefone. Adequada à LGPD para relatórios e análises.</div>' +
-            '</div>' +
-          '</label>' +
-          '<label style="display:flex;align-items:flex-start;gap:10px;padding:12px 14px;border:1.5px solid #fecdd3;border-radius:10px;cursor:pointer;background:#fff1f2">' +
-            '<input type="radio" name="csv-tipo" value="nominal" style="margin-top:3px;flex-shrink:0">' +
-            '<div>' +
-              '<div style="font-size:13px;font-weight:700;color:#e11d48">Nominal (restrita)</div>' +
-              '<div style="font-size:12px;color:#64748b;margin-top:2px">Inclui Nome e Telefone. Uso restrito — somente para fiscalização contratual documentada.</div>' +
-            '</div>' +
-          '</label>' +
-        '</div>' +
-        '<div id="csv-aviso-nominal" style="display:none;background:#fff1f2;border:1px solid #fecdd3;border-radius:8px;padding:10px 12px;margin-bottom:16px;font-size:12px;color:#9f1239">' +
-          '&#9888; Ao exportar dados nominais, você assume responsabilidade pelo uso adequado conforme a Lei n&#186; 13.709/2018 (LGPD). O arquivo deve ser mantido em ambiente seguro.' +
-        '</div>' +
-        '<div style="display:flex;justify-content:flex-end;gap:10px">' +
-          '<button onclick="document.getElementById(\'csv-modal-escolha\').remove()" style="padding:9px 18px;border-radius:9px;border:1.5px solid #e2e8f0;background:#fff;font-size:13px;font-weight:600;cursor:pointer;color:#64748b">Cancelar</button>' +
-          '<button onclick="confirmarExportCSV()" style="padding:9px 18px;border-radius:9px;border:none;background:#1a3a6e;color:#fff;font-size:13px;font-weight:700;cursor:pointer">Exportar</button>' +
-        '</div>' +
-      '</div>';
-    document.body.appendChild(modal);
-    modal.querySelectorAll('input[name="csv-tipo"]').forEach(function(inp) {
-      inp.addEventListener('change', function() {
-        var aviso = document.getElementById('csv-aviso-nominal');
-        if (aviso) aviso.style.display = inp.value === 'nominal' ? 'block' : 'none';
-      });
-    });
-  } else {
-    // Gestor: sempre analítica, sem diálogo
-    _gerarCSV(false);
-  }
-}
-
-function confirmarExportCSV() {
-  var sel = document.querySelector('#csv-modal-escolha input[name="csv-tipo"]:checked');
-  var nominal = sel && sel.value === 'nominal';
-  var el = document.getElementById('csv-modal-escolha');
-  if (el) el.remove();
-  _gerarCSV(nominal);
-}
-
-function _gerarCSV(incluirDadosPessoais) {
-  var d     = STATE.res.filtrados;
-  var user  = STATE.perfil ? STATE.perfil.nome : 'usuário';
-  var perf  = STATE.perfil ? STATE.perfil.perfil.toUpperCase() : '';
-  var agora = new Date().toLocaleString('pt-BR');
-
-  // Normalizar notas para consistência no Excel
-  function normNota(v) {
-    if (!v) return '';
-    if (v === 'Ótima' || v === 'Ótimo') return 'Ótimo';
-    if (v === 'Boa'   || v === 'Bom')   return 'Bom';
-    return v;
-  }
-
-  // Classificação geral do registro
-  function classifGeral(r) {
-    var notas = [r.refeicao, r.atendimento, r.ambiente].filter(notaValida);
-    if (!notas.length) return '';
-    if (notas.some(function(n){ return n === 'Ruim'; }))    return 'Negativa';
-    if (notas.some(function(n){ return n === 'Regular'; })) return 'Regular';
-    if (notas.every(function(n){ return n === 'Ótimo' || n === 'Bom'; })) return 'Positiva';
-    return 'Mista';
-  }
-
-  // Escape CSV
-  function esc(v) {
-    return '"' + String(v || '').replace(/"/g, '""').replace(/\n/g, ' ').replace(/\r/g, '').trim() + '"';
-  }
-
-  // Metadados no topo do arquivo
-  var aviso = incluirDadosPessoais
-    ? 'DOCUMENTO DE USO RESTRITO - CONTÉM DADOS PESSOAIS (LGPD)'
-    : 'DOCUMENTO ANALÍTICO - DADOS SEM IDENTIFICAÇÃO PESSOAL';
-  var meta = [
-    esc(aviso),
-    esc('Exportado por: ' + user + ' (' + perf + ')'),
-    esc('Data/hora: ' + agora),
-    esc('Registros: ' + d.length),
-    esc('Período: ' + (document.getElementById('res-f-data-ini') ? document.getElementById('res-f-data-ini').value : '-') + ' a ' + (document.getElementById('res-f-data-fim') ? document.getElementById('res-f-data-fim').value : '-')),
-    esc('Lei n. 13.709/2018 (LGPD) - Uso exclusivo para gestao contratual'),
-    '',
-  ];
-
-  // Colunas
-  var cab = incluirDadosPessoais
-    ? ['"N"','"Data/Hora"','"Período"','"Avaliação (Refeição)"','"Atendimento"','"Ambiente"','"Classificação Geral"','"Nome"','"Telefone"','"Observações"']
-    : ['"N"','"Data/Hora"','"Período"','"Avaliação (Refeição)"','"Atendimento"','"Ambiente"','"Classificação Geral"','"Observações"'];
-
-  // Linhas
-  var lin = d.map(function(r, i) {
-    var periodo = normPeriodo(r.periodo);
-    var base = [
-      esc(i + 1),
-      esc(fmtData(r.created_at)),
-      esc(nomePeriodo(periodo)),
-      esc(normNota(r.refeicao)),
-      esc(normNota(r.atendimento)),
-      esc(normNota(r.ambiente)),
-      esc(classifGeral(r)),
-    ];
-    if (incluirDadosPessoais) {
-      base.push(esc(r.nome || 'Anônimo'));
-      base.push(esc(r.telefone || ''));
-    }
-    base.push(esc(r.observacoes || ''));
-    return base.join(',');
+  const d   = STATE.res.filtrados;
+  const cab = ['Data/Hora','Refeição','Avaliação','Atendimento','Ambiente','Nome','Telefone','Observações'];
+  const lin = d.map(r => {
+    const periodo = normPeriodo(r.periodo);
+    return [
+      fmtData(r.created_at), nomePeriodo(periodo),
+      r.refeicao||'', r.atendimento||'', r.ambiente||'',
+      r.nome||'Anônimo', r.telefone||'', r.observacoes||''
+    ].map(v => `"${String(v).replace(/"/g,'""')}"`).join(',');
   });
-
-  var csv  = '\uFEFF' + meta.join('\n') + '\n' + cab.join(',') + '\n' + lin.join('\n');
-  var blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
-  var a    = document.createElement('a');
-  var tipo = incluirDadosPessoais ? 'nominal' : 'analitico';
-  var data = new Date().toLocaleDateString('pt-BR').replace(/\//g, '-');
-  a.href     = URL.createObjectURL(blob);
-  a.download = 'RC-Sobradinho-' + tipo + '-' + data + '.csv';
+  const csv = '\uFEFF' + [cab.join(','), ...lin].join('\n');
+  const a   = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([csv], { type:'text/csv;charset=utf-8' }));
+  a.download = `respostas_${new Date().toLocaleDateString('pt-BR').replace(/\//g,'-')}.csv`;
   a.click();
-  URL.revokeObjectURL(a.href);
 }
-
 
 // ── Utilitários locais ────────────────────────────────────
 function setEl(id, txt) {
