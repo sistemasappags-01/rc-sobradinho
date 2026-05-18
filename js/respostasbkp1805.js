@@ -423,10 +423,9 @@ function gerarRelatorioRes() {
   const classificar = v => {
     if (v === null) return '—';
     if (v >= 3.5)  return 'Excelente';
-    if (v >= 3.0)  return 'Satisfatório';
-    if (v >= 2.5)  return 'Regular — requer atenção';
-    if (v >= 2.0)  return 'Crítico — requer ação imediata';
-    return 'Grave — intervenção urgente';
+    if (v >= 3.0)  return 'Bom';
+    if (v >= 2.5)  return 'Regular — atenção';
+    return 'Crítico — ação imediata';
   };
 
   // ── Insights automáticos ──────────────────────────────────
@@ -441,9 +440,9 @@ function gerarRelatorioRes() {
   // Satisfação geral com comparação ao período anterior
   if (pctPos !== null) {
     let ins = '';
-    if (pctPos >= 80)      ins = 'Verificou-se que ' + pctPos + '% das avaliações foram classificadas como positivas (Ótimo ou Bom), indicando satisfação geral elevada no período.';
-    else if (pctPos >= 60) ins = 'Verificou-se que ' + pctPos + '% das avaliações foram classificadas como positivas (Ótimo ou Bom), evidenciando satisfação moderada e demandando atenção continuada.';
-    else                   ins = 'Constatou-se baixo índice de satisfação no período, com apenas ' + pctPos + '% das avaliações classificadas como positivas (Ótimo ou Bom), o que requer adoção imediata de plano de ação.';
+    if (pctPos >= 80)      ins = 'Verificou-se satisfação geral elevada no período, com ' + pctPos + '% das avaliações classificadas como positivas (Ótimo ou Bom).';
+    else if (pctPos >= 60) ins = 'Verificou-se satisfação moderada no período, com ' + pctPos + '% das avaliações positivas, demandando atenção continuada.';
+    else                   ins = 'Constatou-se baixo índice de satisfação no período (' + pctPos + '% positivas), requerendo plano de ação imediato.';
     if (pctPosAnt !== null && dAnt.length >= 5) {
       const diff = pctPos - pctPosAnt;
       if (Math.abs(diff) >= 3) {
@@ -472,7 +471,9 @@ function gerarRelatorioRes() {
   }
 
   // Critérios específicos
-  // Critérios individuais tratados em detalhe no item 4.2 — sem duplicar aqui
+  if (mRef !== null && mRef < 2.5)   insights.push('A Qualidade da Refeição apresentou média crítica (' + fmt2(mRef) + '), requerendo verificação dos processos de distribuição e temperatura.');
+  if (mAtend !== null && mAtend < 2.5) insights.push('O Atendimento apresentou média crítica (' + fmt2(mAtend) + '), requerendo avaliação da postura e cordialidade dos colaboradores.');
+  if (mAmb !== null && mAmb < 2.5)   insights.push('O Ambiente apresentou média crítica (' + fmt2(mAmb) + '), requerendo verificação das condições de limpeza e infraestrutura.');
   if (pctNeg !== null && pctNeg > 10) insights.push('Verificou-se que ' + pctNeg + '% das notas registradas foram "Ruim", percentual que demanda identificação imediata da causa raiz.');
   if (!insights.length) insights.push('Verificou-se que os indicadores do período encontram-se dentro dos parâmetros esperados, sem registro de ocorrências críticas.');
 
@@ -489,11 +490,10 @@ function gerarRelatorioRes() {
     texto22 = 'predominaram avaliações positivas, com ' + pctPos + '% das notas'
       + ' classificadas como Ótimo ou Bom, indicando satisfação adequada dos usuários no período.';
   } else if (pctPos >= 50) {
-    texto22 = 'Verificou-se predominância moderada de avaliações positivas (' + pctPos + '%), '
-      + 'porém com expressiva parcela de avaliações regulares e negativas (' + (100 - pctPos) + '%), '
-      + 'o que demanda atenção continuada quanto à qualidade dos serviços.';
+    texto22 = 'houve equilíbrio entre avaliações positivas e negativas/regulares ('
+      + pctPos + '% positivas), demandando atenção quanto à qualidade dos serviços.';
   } else {
-    texto22 = 'Constata-se presença expressiva de avaliações negativas e regulares ('
+    texto22 = 'há presença relevante de avaliações negativas e regulares ('
       + (100 - pctPos) + '% do total), o que requer atenção imediata por parte da empresa contratada.';
   }
 
@@ -517,19 +517,18 @@ function gerarRelatorioRes() {
       const dif    = (melhor.v - pior23.v).toFixed(2).replace('.', ',');
       const classPior = pior23.v >= 3.0 ? 'Bom'
         : pior23.v >= 2.5 ? 'Regular — requer atenção'
-        : 'Crítica — requer ação imediata';
+        : 'Crítico — requer ação imediata';
 
       texto23 = 'Dentre os critérios avaliados, "' + melhor.nome + '" apresentou o melhor desempenho'
         + ' (média ' + fmt2(melhor.v) + '), enquanto "' + pior23.nome + '" registrou a menor média'
-        + ' (' + fmt2(pior23.v) + '), classificada na faixa "' + classPior + '". ';
+        + ' (' + fmt2(pior23.v) + '), classificada como ' + classPior + '. ';
 
       if (parseFloat(dif.replace(',', '.')) >= 0.20) {
         texto23 += 'A diferença de ' + dif + ' pontos entre o melhor e o pior critério indica'
           + ' desempenho desigual entre os aspectos avaliados.';
       } else {
         texto23 += 'A variação de ' + dif + ' pontos entre os critérios indica desempenho'
-  + ' pontos entre os critérios, estando todos na mesma faixa de classificação,'
-  + ' o que indica desempenho uniformemente insatisfatório no período.';
+          + ' relativamente homogêneo no período.';
       }
 
       if (pior23.v < 2.5) {
@@ -604,16 +603,12 @@ function gerarRelatorioRes() {
       const ruimCampo = d.reduce((acc, reg) => {
         return acc + (reg[pior42.campo] === 'Ruim' ? 1 : 0);
       }, 0);
-      // Denominador = notas válidas desse critério específico (mais informativo)
-      const notasCampo = d.reduce((acc, reg) => {
-        return acc + (notaValida(reg[pior42.campo]) ? 1 : 0);
-      }, 0);
-      const pctRuimCampo = notasCampo > 0 ? Math.round(ruimCampo / notasCampo * 100) : 0;
+      const pctRuimCampo = totalAv > 0 ? Math.round(ruimCampo / totalAv * 100) : 0;
 
       const nivel42 = pior42.v < 2.5
-        ? 'em nível crítico, o que requer adoção de medidas corretivas imediatas pela empresa contratada'
+        ? 'em nível crítico, requerendo ação imediata'
         : pior42.v < 3.0
-          ? 'abaixo da faixa satisfatória, o que requer atenção e monitoramento continuado'
+          ? 'abaixo da faixa satisfatória, requerendo atenção'
           : 'dentro da faixa aceitável, porém com espaço para melhoria';
 
       let recom42 = '';
@@ -626,8 +621,8 @@ function gerarRelatorioRes() {
 
       texto42 = 'O critério "' + pior42.nome + '" registrou a menor média do período'
         + ' (' + fmt2(pior42.v) + '), situando-se ' + nivel42 + '. '
-        + 'Foram contabilizadas ' + ruimCampo + ' notas "Ruim" nesse critério'
-        + ' (' + pctRuimCampo + '% das avaliações desse critério). ' + recom42;
+        + 'Foram contabilizadas ' + ruimCampo + ' notas "Ruim" para esse critério'
+        + ' (' + pctRuimCampo + '% do total de notas válidas). ' + recom42;
     }
   }
 
@@ -649,17 +644,17 @@ function gerarRelatorioRes() {
       const palavras43 = topObs.map(([w]) => w.toLowerCase());
       const temas43 = [];
       if (palavras43.some(w => ['frio','quente','temperatura','morno'].includes(w)))
-        temas43.push('irregularidades na temperatura de distribuição das refeições');
+        temas43.push('problemas na temperatura de distribuição das refeições');
       if (palavras43.some(w => ['banheiro','sanitário','limpeza','sujo','higiene'].includes(w)))
-        temas43.push('condições higiênico-sanitárias inadequadas no ambiente');
+        temas43.push('condições higiênico-sanitárias do ambiente');
       if (palavras43.some(w => ['atendimento','demora','fila','espera','tempo','lento'].includes(w)))
-        temas43.push('tempo de espera prolongado e qualidade do atendimento');
+        temas43.push('tempo de espera e qualidade do atendimento');
       if (palavras43.some(w => ['porção','pouco','quantidade','aguado','insosso'].includes(w)))
-        temas43.push('porcionamento irregular e qualidade sensorial das preparações');
+        temas43.push('porcionamento e qualidade sensorial das preparações');
 
       texto43 = 'Das ' + obsComTexto.length + ' observações textuais registradas, '
         + obsNeg43 + ' (' + pctObsNeg43 + '%) acompanharam avaliações negativas ou regulares. '
-        + 'Os termos mais frequentes foram ' + top3 + ', sugerindo que as principais preocupações dos usuários estão relacionadas a ';
+        + 'Os termos mais frequentes foram ' + top3 + ', sugerindo ';
 
       if (temas43.length > 1) {
         texto43 += temas43.slice(0, -1).join(', ') + ' e ' + temas43[temas43.length - 1] + '.';
@@ -698,7 +693,7 @@ function gerarRelatorioRes() {
           + ' de notas "Ruim" (' + piorPer.pct + '% das notas válidas desse turno — '
           + piorPer.total + ' avaliações). ';
         if (piorPer.pct > 15)
-          texto44 += 'O percentual acima de 15% ultrapassa o parâmetro de referência adotado, configurando situação que demanda atenção prioritária às condições de serviço nesse turno.';
+          texto44 += 'O percentual acima de 15% é considerado crítico e recomenda-se atenção prioritária às condições de serviço nesse turno.';
         else if (piorPer.pct > 5)
           texto44 += 'O percentual indica necessidade de monitoramento continuado nesse período.';
         else
@@ -995,7 +990,7 @@ function gerarRelatorioRes() {
     <div class="secao-titulo">1. Relatório</div>
     <div class="secao-body">
       <p class="item">1.1. Trata-se de relatório técnico elaborado pela Gerência Regional de Segurança Alimentar e Nutricional de Sobradinho – GERSANSOB, em atendimento às diretrizes institucionais relativas ao monitoramento da satisfação dos usuários dos Restaurantes Comunitários, com vistas à avaliação da qualidade dos serviços prestados pela empresa contratada.</p>
-      <p class="item">1.2. A coleta de dados foi realizada por meio de formulário digital de pesquisa de opinião, contemplando a avaliação da qualidade da refeição, do atendimento e do ambiente, com as classificações: Ótimo, Bom, Regular e Ruim, além de campo aberto destinado ao registro de observações e sugestões dos usuários.</p>
+      <p class="item">1.2. A coleta de dados foi realizada por meio de formulário digital de pesquisa de opinião, contemplando a avaliação da qualidade da refeição, do atendimento e do ambiente, com as classificações: Ótimo, Bom, Regular e Ruim, além de campo destinado a observações livres.</p>
       <p class="item">1.3. No período de <strong>${fmtFiltro(dataIni)}</strong> a <strong>${fmtFiltro(dataFim)}</strong>, foram registradas <strong>${total} avaliações</strong>, totalizando <strong>${totalAv} notas válidas</strong> distribuídas entre os três critérios avaliados.</p>
     </div>
   </div>
@@ -1147,13 +1142,13 @@ function gerarRelatorioRes() {
   <div class="secao">
     <div class="secao-titulo">3. Principais Manifestações dos Usuários</div>
     <div class="secao-body">
-      <p class="item">3.1. Com base nas observações registradas nos formulários (${obsComTexto.length} registros com comentários), foram identificados os seguintes termos mais recorrentes nas manifestações registradas pelos usuários, apresentados por ordem de frequência:</p>
+      <p class="item">3.1. Com base nas observações registradas nos formulários (${obsComTexto.length} registros com comentários), foram identificados os seguintes termos mais frequentes nas manifestações dos usuários:</p>
       ${topObs.length ? `
       <table>
         <tr><th>Termo identificado</th><th class="num">Frequência</th></tr>
         ${topObs.map(([w,n]) => `<tr><td>${w}</td><td class="num">${n}</td></tr>`).join('')}
       </table>` : '<p class="item">Não foram identificadas observações textuais no período selecionado.</p>'}
-      <p class="item">3.2. As manifestações acima foram extraídas de forma anônima dos campos de observação livre dos formulários, preservando a privacidade dos usuários em conformidade com a Lei Geral de Proteção de Dados (Lei nº 13.709/2018).</p>
+      <p class="item">3.2. As manifestações acima foram extraídas anonimamente dos campos de observação livre dos formulários, preservando a privacidade dos usuários em conformidade com a Lei Geral de Proteção de Dados (Lei nº 13.709/2018).</p>
     </div>
   </div>
 
@@ -1178,7 +1173,7 @@ function gerarRelatorioRes() {
       <!-- ── 4.4 Período mais crítico ── -->
       <p class="item">4.4. ${texto44}</p>
 
-            <p class="item" style="margin-top:10px">4.5. Ressalta-se que os apontamentos acima deverão ser avaliados pela empresa contratada, com vistas à adoção de medidas corretivas e preventivas.</p>
+            <p class="item" style="margin-top:10px">4.5. Ressalta-se que os apontamentos acima deverão ser avaliados pela empresa contratada, com vistas à adoção de medidas corretivas e preventivas quando aplicável.</p>
     </div>
   </div>
 
@@ -1186,8 +1181,8 @@ function gerarRelatorioRes() {
   <div class="secao">
     <div class="secao-titulo">5. Conclusão</div>
     <div class="secao-body">
-      <p class="item">5.1. Verificou-se que o monitoramento da satisfação dos usuários constitui ferramenta relevante para avaliação da execução contratual, permitindo a identificação de fragilidades e subsidiando a melhoria contínua dos serviços ofertados, com suporte do sistema digital de pesquisa implantado na unidade.</p>
-      <p class="item">5.2. Diante do exposto, os resultados ora apresentados deverão ser formalmente comunicados à empresa contratada, para fins de ciência e adoção das providências cabíveis, em especial quanto aos critérios com desempenho abaixo da faixa satisfatória.</p>
+      <p class="item">5.1. Verificou-se que o monitoramento da satisfação dos usuários constitui ferramenta relevante para avaliação da execução contratual, permitindo a identificação de fragilidades e subsidiando a melhoria contínua dos serviços ofertados.</p>
+      <p class="item">5.2. Diante do exposto, entende-se necessária a ciência da empresa contratada acerca dos resultados apresentados, bem como a apresentação de manifestação formal contendo plano de ação com prazos definidos para tratamento das inconsistências identificadas, quando aplicável.</p>
     </div>
   </div>
 
@@ -1196,7 +1191,7 @@ function gerarRelatorioRes() {
   <div class="secao">
     <div class="secao-titulo">6. Encaminhamento</div>
     <div class="secao-body">
-      <p class="item">6.1. Encaminhem-se os autos à empresa contratada para ciência e manifestação, devendo ser apresentado <strong>plano de ação</strong> contemplando medidas corretivas e preventivas, com cronograma e <strong>prazos definidos</strong>, no prazo de <strong>5 (cinco) dias úteis</strong>, a contar do recebimento deste documento.</p>
+      <p class="item">6.1. Encaminhem-se os autos à empresa contratada para ciência e manifestação, devendo ser apresentado <strong>plano de ação com prazos definidos</strong> contemplando medidas corretivas e preventivas, no prazo de <strong>5 (cinco) dias úteis</strong>, a contar do recebimento deste documento.</p>
     </div>
   </div>
 
