@@ -972,10 +972,7 @@ function gerarRelatorioRes() {
   </div>
 
   <div class="titulo-relatorio">Relatório Técnico de Monitoramento da Satisfação dos Usuários</div>
-  <p style="text-align:center;font-size:10pt;color:#444;margin-bottom:4px">
-    Período de referência: ${fmtFiltro(dataIni)} a ${fmtFiltro(dataFim)}
-    ${periodo ? ' | Refeição: ' + periodoTxt : ''}
-  </p>
+
 
   <!-- Linha em branco + processo -->
   <p style="margin:0">&nbsp;</p>
@@ -1206,31 +1203,27 @@ function gerarRelatorioRes() {
   <div style="margin-top:28px">
     <p style="font-size:12pt;text-align:right;margin-bottom:28px">Brasília-DF, ${hoje}</p>
 
-    <table style="width:100%;border:none;margin-bottom:0" class="tab-ass">
+    <table style="width:100%;border:none;margin-bottom:0;table-layout:fixed" class="tab-ass">
       <tr>
-        <!-- Emissor -->
-        <td style="width:47%;border:none;text-align:center;vertical-align:bottom;padding:0 8px 0 0">
-          <div style="border-top:1px solid #000;padding-top:6px;margin-top:60px">
-            <p style="font-size:9pt;color:#333;margin:0 0 2px">Nome: _________________________________</p>
-            <p style="font-size:9pt;color:#333;margin:2px 0">Matrícula/SIAPE: _______________________</p>
-            <p style="font-size:9pt;color:#333;margin:2px 0">Cargo: ________________________________</p>
-            <p style="font-size:10pt;font-weight:bold;line-height:1.5;margin:8px 0 2px;text-align:center">
-              Gerência Regional de Segurança Alimentar<br>e Nutricional de Sobradinho — GERSANSOB
-            </p>
-            <p style="font-size:9pt;color:#333;margin:4px 0 0;text-align:center">Data: ___/___/______</p>
+        <!-- Emissor — alinhado pelo topo -->
+        <td style="width:47%;border:none;vertical-align:top;padding:0 20px 0 0">
+          <div style="border-top:2px solid #000;padding-top:8px">
+            <p style="font-size:9pt;color:#333;margin:0 0 4px">Nome: _________________________________</p>
+            <p style="font-size:9pt;color:#333;margin:0 0 4px">Matrícula: ____________________________</p>
+            <p style="font-size:9pt;color:#333;margin:0 0 8px">Cargo: ________________________________</p>
+            <p style="font-size:10pt;font-weight:bold;margin:0 0 4px">GERSANSOB</p>
+            <p style="font-size:9pt;color:#333;margin:0">Data: ___/___/______</p>
           </div>
         </td>
         <!-- Espaçador -->
         <td style="width:6%;border:none"></td>
-        <!-- Recebimento -->
-        <td style="width:47%;border:none;text-align:center;vertical-align:bottom;padding:0 0 0 8px">
-          <div style="border-top:1px solid #000;padding-top:6px;margin-top:60px">
-            <p style="font-size:10pt;font-weight:bold;line-height:1.5;margin:0">
-              Empresa Contratada
-            </p>
-            <p style="font-size:9pt;color:#333;margin:2px 0 0">Nome: _________________________________</p>
-            <p style="font-size:9pt;color:#333;margin:2px 0 0">Cargo: ________________________________</p>
-            <p style="font-size:9pt;color:#333;margin:4px 0 0">Data: ___/___/______</p>
+        <!-- Recebimento — mesma estrutura, alinhado pelo topo -->
+        <td style="width:47%;border:none;vertical-align:top;padding:0 0 0 20px">
+          <div style="border-top:2px solid #000;padding-top:8px">
+            <p style="font-size:10pt;font-weight:bold;margin:0 0 4px">Empresa Contratada</p>
+            <p style="font-size:9pt;color:#333;margin:0 0 4px">Nome: _________________________________</p>
+            <p style="font-size:9pt;color:#333;margin:0 0 8px">Cargo: ________________________________</p>
+            <p style="font-size:9pt;color:#333;margin:0">Data: ___/___/______</p>
           </div>
         </td>
       </tr>
