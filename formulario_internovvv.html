@@ -690,7 +690,6 @@
       document.getElementById('app-content').style.display  = 'block';
       // Guardar nome do servidor para o payload
       window.STATE_SERVIDOR_NOME = rows?.[0]?.nome || session.user.email || 'servidor';
-      window.STATE_SERVIDOR_UUID = session.user.id; // UUID para FK registrado_por
 
     } catch(e) {
       document.getElementById('auth-msg').textContent = '❌ Erro ao verificar acesso: ' + e.message;
@@ -819,6 +818,14 @@
     // Período normalizado para chave interna (cafe / almoco / jantar)
     const periodoNorm = MAP_PERIODO[periodoSelecionado] || periodoSelecionado;
 
+    // Obter nome do servidor logado para rastreabilidade
+    const nomeServidor = _sb
+      ? await _sb.auth.getSession().then(r => {
+          const uid = r.data?.session?.user?.id;
+          return uid ? 'usuário ' + uid.substring(0,8) : 'servidor';
+        }).catch(() => 'servidor')
+      : 'servidor';
+
     const payload = {
       periodo:              periodoNorm,
       refeicao:             dados.refeicao    || null,
@@ -829,8 +836,7 @@
       telefone:             document.getElementById('telefone').value.trim() || null,
       // Rastreabilidade LGPD — identificação do lançamento manual
       origem:               'manual',
-      registrado_por:       STATE_SERVIDOR_UUID || null,
-      registrado_por_nome:  STATE_SERVIDOR_NOME || null,
+      registrado_por_nome:  STATE_SERVIDOR_NOME || nomeServidor,
     };
 
     try {
