@@ -248,12 +248,7 @@ function renderTabelaRes() {
         const tel  = r.telefone?.trim()
           ? `<br><small style="color:var(--tx3)">${r.telefone}</small>` : '';
         return `<tr>
-          <td class="td-data">
-              ${fmtData(r.created_at)}
-              ${r.origem === 'manual'
-                ? '<span class="badge-manual" title="Lançamento manual por ' + (r.registrado_por_nome || 'servidor') + '">Manual</span>'
-                : ''}
-            </td>
+          <td class="td-data">${fmtData(r.created_at)}</td>
           <td><span class="ref-badge ${classeRef(periodo)}">${nomePeriodo(periodo)}</span></td>
           <td>${celulaNota(r.refeicao)}</td>
           <td>${celulaNota(r.atendimento)}</td>
@@ -328,9 +323,6 @@ function verDetalhesRes(idx) {
   const periodo = normPeriodo(r.periodo);
   setHTML('res-modal-body', `
     ${row('Data/Hora',  fmtData(r.created_at))}
-    ${r.origem === 'manual'
-        ? row('Origem', '<span class="badge-manual">Lançamento Manual</span> por <strong>' + (r.registrado_por_nome || '—') + '</strong>')
-        : row('Origem', 'Formulário digital')}
     ${row('Refeição',   `<span class="ref-badge ${classeRef(periodo)}">${nomePeriodo(periodo)}</span>`)}
     ${row('Avaliação',   celulaNota(r.refeicao))}
     ${row('Atendimento', celulaNota(r.atendimento))}
@@ -1002,13 +994,7 @@ function gerarRelatorioRes() {
     <div class="secao-body">
       <p class="item">1.1. Trata-se de relatório técnico elaborado pela Gerência Regional de Segurança Alimentar e Nutricional de Sobradinho – GERSANSOB, em atendimento às diretrizes institucionais relativas ao monitoramento da satisfação dos usuários dos Restaurantes Comunitários, com vistas à avaliação da qualidade dos serviços prestados pela empresa contratada.</p>
       <p class="item">1.2. A coleta de dados foi realizada por meio de formulário digital de pesquisa de opinião, contemplando a avaliação da qualidade da refeição, do atendimento e do ambiente, com as classificações: Ótimo, Bom, Regular e Ruim, além de campo aberto destinado ao registro de observações e sugestões dos usuários.</p>
-      <p class="item">1.3. No período de <strong>${fmtFiltro(dataIni)}</strong> a <strong>${fmtFiltro(dataFim)}</strong>, foram registradas <strong>${total} avaliações</strong>, totalizando <strong>${totalAv} notas válidas</strong> distribuídas entre os três critérios avaliados${(() => {
-        const manuais  = d.filter(r => r.origem === 'manual').length;
-        const digitais = total - manuais;
-        if (manuais === 0) return ', todas coletadas por meio do formulário digital.';
-        if (digitais === 0) return ', todas lançadas manualmente por servidores da GERSANSOB.';
-        return ', sendo ' + digitais + ' coletadas por meio do formulário digital e ' + manuais + ' lançadas manualmente por servidores da GERSANSOB.';
-      })()}</p>
+      <p class="item">1.3. No período de <strong>${fmtFiltro(dataIni)}</strong> a <strong>${fmtFiltro(dataFim)}</strong>, foram registradas <strong>${total} avaliações</strong>, totalizando <strong>${totalAv} notas válidas</strong> distribuídas entre os três critérios avaliados.</p>
     </div>
   </div>
 
@@ -1390,13 +1376,12 @@ function _gerarCSV(incluirDadosPessoais) {
 
   // Colunas
   var cab = incluirDadosPessoais
-    ? ['"N"','"Data/Hora"','"Período"','"Avaliação (Refeição)"','"Atendimento"','"Ambiente"','"Classificação Geral"','"Origem"','"Registrado por"','"Nome"','"Telefone"','"Observações"']
-    : ['"N"','"Data/Hora"','"Período"','"Avaliação (Refeição)"','"Atendimento"','"Ambiente"','"Classificação Geral"','"Origem"','"Observações"'];
+    ? ['"N"','"Data/Hora"','"Período"','"Avaliação (Refeição)"','"Atendimento"','"Ambiente"','"Classificação Geral"','"Nome"','"Telefone"','"Observações"']
+    : ['"N"','"Data/Hora"','"Período"','"Avaliação (Refeição)"','"Atendimento"','"Ambiente"','"Classificação Geral"','"Observações"'];
 
   // Linhas
   var lin = d.map(function(r, i) {
     var periodo = normPeriodo(r.periodo);
-    var origemTexto = r.origem === 'manual' ? 'Manual' : 'Formulário digital';
     var base = [
       esc(i + 1),
       esc(fmtData(r.created_at)),
@@ -1405,10 +1390,8 @@ function _gerarCSV(incluirDadosPessoais) {
       esc(normNota(r.atendimento)),
       esc(normNota(r.ambiente)),
       esc(classifGeral(r)),
-      esc(origemTexto),
     ];
     if (incluirDadosPessoais) {
-      base.push(esc(r.origem === 'manual' ? (r.registrado_por_nome || '—') : 'N/A'));
       base.push(esc(r.nome || 'Anônimo'));
       base.push(esc(r.telefone || ''));
     }

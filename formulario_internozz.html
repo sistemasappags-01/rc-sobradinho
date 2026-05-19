@@ -688,8 +688,6 @@
       // OK — mostrar formulário
       document.getElementById('auth-overlay').style.display = 'none';
       document.getElementById('app-content').style.display  = 'block';
-      // Guardar nome do servidor para o payload
-      window.STATE_SERVIDOR_NOME = rows?.[0]?.nome || session.user.email || 'servidor';
 
     } catch(e) {
       document.getElementById('auth-msg').textContent = '❌ Erro ao verificar acesso: ' + e.message;
@@ -818,25 +816,14 @@
     // Período normalizado para chave interna (cafe / almoco / jantar)
     const periodoNorm = MAP_PERIODO[periodoSelecionado] || periodoSelecionado;
 
-    // Obter nome do servidor logado para rastreabilidade
-    const nomeServidor = _sb
-      ? await _sb.auth.getSession().then(r => {
-          const uid = r.data?.session?.user?.id;
-          return uid ? 'usuário ' + uid.substring(0,8) : 'servidor';
-        }).catch(() => 'servidor')
-      : 'servidor';
-
     const payload = {
-      periodo:              periodoNorm,
-      refeicao:             dados.refeicao    || null,
-      atendimento:          dados.atendimento || null,
-      ambiente:             dados.ambiente    || null,
-      observacoes:          obsEl.value.trim() || null,
-      nome:                 document.getElementById('nome').value.trim()     || null,
-      telefone:             document.getElementById('telefone').value.trim() || null,
-      // Rastreabilidade LGPD — identificação do lançamento manual
-      origem:               'manual',
-      registrado_por_nome:  STATE_SERVIDOR_NOME || nomeServidor,
+      periodo:     periodoNorm,
+      refeicao:    dados.refeicao    || null,
+      atendimento: dados.atendimento || null,
+      ambiente:    dados.ambiente    || null,
+      observacoes: obsEl.value.trim() || null,
+      nome:        document.getElementById('nome').value.trim()     || null,
+      telefone:    document.getElementById('telefone').value.trim() || null,
     };
 
     try {
@@ -883,7 +870,7 @@
         clearInterval(timer);
         // Voltar para a página de respostas
         const base = window.location.href.replace(/[^/]*$/, '');
-        window.location.href = base + 'app.html#respostas';
+        window.location.href = base + 'formulario_interno.html';
       }
     }, 1000);
   }
