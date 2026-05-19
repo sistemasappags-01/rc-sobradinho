@@ -251,7 +251,7 @@ function renderTabelaRes() {
           <td class="td-data">
               ${fmtData(r.created_at)}
               ${r.origem === 'manual'
-                ? '<span class="badge-manual" title="Lançamento manual por ' + (r.registrado_por_nome || 'servidor') + '">Manual</span>'
+                ? '<span class="badge-manual" title="Lançado manualmente por ' + (r.registrado_por_nome || 'servidor') + '">Manual</span>'
                 : ''}
             </td>
           <td><span class="ref-badge ${classeRef(periodo)}">${nomePeriodo(periodo)}</span></td>
@@ -329,8 +329,17 @@ function verDetalhesRes(idx) {
   setHTML('res-modal-body', `
     ${row('Data/Hora',  fmtData(r.created_at))}
     ${r.origem === 'manual'
-        ? row('Origem', '<span class="badge-manual">Lançamento Manual</span> por <strong>' + (r.registrado_por_nome || '—') + '</strong>')
-        : row('Origem', 'Formulário digital')}
+        ? row('Origem',
+            '<span class="badge-manual-modal">Lançamento Manual</span>' +
+            '<div style="margin-top:4px;font-size:11px;color:var(--tx3)">' +
+              '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="vertical-align:middle;margin-right:3px"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>' +
+              'Registrado por: <strong style="color:var(--tx1)">' + (r.registrado_por_nome || 'Servidor não identificado') + '</strong>' +
+            '</div>')
+        : row('Origem',
+            '<span style="display:inline-flex;align-items:center;gap:5px;font-size:12px;color:var(--verde);font-weight:600">' +
+              '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.61 3.18 2 2 0 0 1 3.6 1h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.1a16 16 0 0 0 5.98 5.98l.95-.95a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>' +
+              'Formulário digital (usuário)' +
+            '</span>')}
     ${row('Refeição',   `<span class="ref-badge ${classeRef(periodo)}">${nomePeriodo(periodo)}</span>`)}
     ${row('Avaliação',   celulaNota(r.refeicao))}
     ${row('Atendimento', celulaNota(r.atendimento))}
