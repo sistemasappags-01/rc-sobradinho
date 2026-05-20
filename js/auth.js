@@ -380,7 +380,7 @@ function mostrarAvisoSessao(msg) {
     aviso.style.cssText = [
       'position:fixed', 'top:0', 'left:0', 'right:0', 'z-index:9998',
       'background:#1a3a6e', 'color:#fff', 'text-align:center',
-      'padding:10px 16px', 'font-size:13px', 'font-family:'DM Sans',sans-serif',
+      'padding:10px 16px', 'font-size:13px', 'font-family:DM Sans,sans-serif',
       'box-shadow:0 2px 8px rgba(0,0,0,.25)'
     ].join(';');
     document.body.appendChild(aviso);
