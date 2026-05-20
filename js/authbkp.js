@@ -184,10 +184,7 @@ async function carregarTodosOsDados() {
   if (_carregando) return;
   _carregando = true;
   try {
-    // T1 — Limitar registros iniciais para performance
-    // CONFIG.LIMITE_REGISTROS define o máximo (ex: 2000)
-    const limite = CONFIG.LIMITE_REGISTROS || 2000;
-    const rows = await fetchREST(`respostas?select=*&order=created_at.desc&limit=${limite}`);
+    const rows = await fetchREST('respostas?select=*&order=created_at.desc');
     STATE.dados = Array.isArray(rows) ? rows : [];
     calcularPeriodos();
   } catch(e) {
@@ -201,10 +198,7 @@ async function carregarTodosOsDados() {
 async function atualizarDadosSilencioso() {
   if (_carregando || _navegando) return;
   try {
-    // T1 — Limitar registros iniciais para performance
-    // CONFIG.LIMITE_REGISTROS define o máximo (ex: 2000)
-    const limite = CONFIG.LIMITE_REGISTROS || 2000;
-    const rows = await fetchREST(`respostas?select=*&order=created_at.desc&limit=${limite}`);
+    const rows = await fetchREST('respostas?select=*&order=created_at.desc');
     STATE.dados = Array.isArray(rows) ? rows : [];
     calcularPeriodos();
 
@@ -228,38 +222,17 @@ async function atualizarDadosSilencioso() {
 async function atualizarManual() {
   const btn = document.getElementById('btn-refresh');
   if (btn) { btn.disabled = true; btn.classList.add('refresh-spin'); }
-  try {
-    await carregarTodosOsDados();
-    switch (STATE.secao) {
-      case 'dashboard': renderDashboard(); break;
-      case 'respostas': aplicarFiltrosRes(); break;
-    }
-    atualizarTagHora();
-    if (btn) {
-      btn.disabled = false;
-      btn.classList.remove('refresh-spin');
-      btn.classList.add('refresh-ok');
-      setTimeout(() => btn.classList.remove('refresh-ok'), 1500);
-    }
-  } catch(e) {
-    // D3 — Feedback visual de erro no botão Atualizar
-    if (btn) {
-      btn.disabled = false;
-      btn.classList.remove('refresh-spin');
-      btn.classList.add('refresh-erro');
-      btn.title = 'Erro ao atualizar: ' + e.message;
-      setTimeout(() => {
-        btn.classList.remove('refresh-erro');
-        btn.title = 'Atualizar dados';
-      }, 3000);
-    }
-    // Mostrar aviso discreto no topo
-    mostrarAvisoSessao('⚠ Erro ao atualizar dados: ' + e.message);
-    setTimeout(() => {
-      const av = document.getElementById('sessao-aviso');
-      if (av) av.remove();
-    }, 4000);
-    console.warn('[atualizarManual] erro:', e.message);
+  await carregarTodosOsDados();
+  switch (STATE.secao) {
+    case 'dashboard': renderDashboard(); break;
+    case 'respostas': aplicarFiltrosRes(); break;
+  }
+  atualizarTagHora();
+  if (btn) {
+    btn.disabled = false;
+    btn.classList.remove('refresh-spin');
+    btn.classList.add('refresh-ok');
+    setTimeout(() => btn.classList.remove('refresh-ok'), 1500);
   }
 }
 

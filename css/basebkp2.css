@@ -283,15 +283,3 @@ input.input-erro {
   from { transform: translateY(-100%); opacity: 0; }
   to   { transform: translateY(0);     opacity: 1; }
 }
-
-/* ── D3 — Botão Atualizar com erro ── */
-.refresh-erro {
-  border-color: var(--vermelho) !important;
-  color: var(--vermelho) !important;
-  animation: shake .3s ease;
-}
-@keyframes shake {
-  0%,100% { transform: translateX(0); }
-  25%      { transform: translateX(-4px); }
-  75%      { transform: translateX(4px); }
-}

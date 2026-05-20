@@ -49,9 +49,6 @@ async function recarregarEFiltrar() {
 }
 
 // ── PASSO 3: Filtros corrigidos ──────────────────────────
-// R5 — Estado de ordenação
-let _ordenacao = { coluna: 'created_at', dir: 'desc' };
-
 function aplicarFiltrosRes() {
   const dataIni  = document.getElementById('res-f-data-ini')?.value || '';
   const dataFim  = document.getElementById('res-f-data-fim')?.value || '';
@@ -79,9 +76,6 @@ function aplicarFiltrosRes() {
 
   const ordemNota = { ruim:1, regular:2, bom:3, otimo:4 };
   const minVal    = ordemNota[notaMin] || 0;
-
-  // R4 — Busca textual nas observações
-  const busca = (document.getElementById('res-f-busca')?.value || '').toLowerCase().trim();
 
   STATE.res.filtrados = STATE.res.todos.filter(r => {
     // Filtro de data
@@ -112,22 +106,7 @@ function aplicarFiltrosRes() {
       if (!notas.length || !notas.every(v => (ord[v] || 0) >= minVal)) return false;
     }
 
-    // R4 — Filtro de busca textual
-    if (busca) {
-      const obs = (r.observacoes || '').toLowerCase();
-      if (!obs.includes(busca)) return false;
-    }
     return true;
-  });
-
-  // R5 — Ordenação da tabela
-  STATE.res.filtrados.sort((a, b) => {
-    const col = _ordenacao.coluna;
-    const dir = _ordenacao.dir === 'asc' ? 1 : -1;
-    const va = a[col] || '';
-    const vb = b[col] || '';
-    if (col === 'created_at') return dir * (new Date(va) - new Date(vb));
-    return dir * String(va).localeCompare(String(vb), 'pt-BR');
   });
 
   STATE.res.pagina = 1;
@@ -135,24 +114,6 @@ function aplicarFiltrosRes() {
   renderGraficosRes();
   renderTabelaRes();
   renderPaginacaoRes();
-}
-
-// R5 — Mudar ordenação da tabela
-function ordenarPor(coluna) {
-  if (_ordenacao.coluna === coluna) {
-    _ordenacao.dir = _ordenacao.dir === 'asc' ? 'desc' : 'asc';
-  } else {
-    _ordenacao.coluna = coluna;
-    _ordenacao.dir = coluna === 'created_at' ? 'desc' : 'asc';
-  }
-  // Atualizar visual dos th
-  document.querySelectorAll('.th-sort').forEach(th => {
-    th.classList.remove('sort-asc', 'sort-desc');
-    if (th.dataset.col === coluna) {
-      th.classList.add('sort-' + _ordenacao.dir);
-    }
-  });
-  aplicarFiltrosRes();
 }
 
 function limparFiltrosRes() {
@@ -373,11 +334,7 @@ function mudarPorPaginaRes() {
 }
 
 // ── Modal detalhes ────────────────────────────────────────
-// Índice do modal atual — para navegação
-let _idxModal = 0;
-
 function verDetalhesRes(idx) {
-  _idxModal = idx;
   const r = STATE.res.filtrados[idx];
   if (!r) return;
   const row = (l, v) =>
@@ -414,20 +371,6 @@ function verDetalhesRes(idx) {
     ${row('Observação',  r.observacoes || '<em class="vazio">—</em>')}
   `);
   document.getElementById('res-modal').classList.add('show');
-  // Atualizar estado das setas de navegação
-  const total = STATE.res.filtrados.length;
-  const btnPrev = document.getElementById('res-modal-prev');
-  const btnNext = document.getElementById('res-modal-next');
-  const navInfo = document.getElementById('res-modal-nav-info');
-  if (btnPrev) btnPrev.disabled = idx <= 0;
-  if (btnNext) btnNext.disabled = idx >= total - 1;
-  if (navInfo) navInfo.textContent = (idx + 1) + ' de ' + total;
-}
-
-function navModal(dir) {
-  const novoIdx = _idxModal + dir;
-  if (novoIdx < 0 || novoIdx >= STATE.res.filtrados.length) return;
-  verDetalhesRes(novoIdx);
 }
 
 function fecharModalRes() {

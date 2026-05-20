@@ -43,8 +43,7 @@ function renderListaUsuarios(usuarios) {
           </span>
         </td>
         <td>
-          <button class="btn-det" onclick="abrirEdicao(${JSON.stringify(u).replace(/"/g,'&quot;')})">Editar</button>
-          <button class="btn-det" style="margin-left:4px" onclick="toggleAtivo('${u.id}', ${u.ativo})">
+          <button class="btn-det" onclick="toggleAtivo('${u.id}', ${u.ativo})">
             ${u.ativo?'Desativar':'Ativar'}
           </button>
         </td>
@@ -59,43 +58,6 @@ async function toggleAtivo(id, atualAtivo) {
     await fetchREST_WRITE('PATCH', `perfis?id=eq.${id}`, { ativo: !atualAtivo });
     await carregarUsuarios();
   } catch(e) { alert('Erro ao atualizar usuário: ' + e.message); }
-}
-
-// A1 — Edição de perfil existente
-function abrirEdicao(u) {
-  // Preencher modal com dados do usuário
-  document.getElementById('adm-edit-id').value     = u.id;
-  document.getElementById('adm-edit-nome').value   = u.nome || '';
-  document.getElementById('adm-edit-perfil').value = u.perfil || 'visualizador';
-  document.getElementById('adm-edit-ativo').checked = !!u.ativo;
-  setHTML('adm-edit-msg', '');
-  document.getElementById('adm-modal-edicao').classList.add('show');
-}
-
-function fecharEdicao() {
-  document.getElementById('adm-modal-edicao').classList.remove('show');
-}
-
-async function salvarEdicao() {
-  const id     = document.getElementById('adm-edit-id').value;
-  const nome   = document.getElementById('adm-edit-nome').value.trim();
-  const perfil = document.getElementById('adm-edit-perfil').value;
-  const ativo  = document.getElementById('adm-edit-ativo').checked;
-
-  if (!nome) { setHTML('adm-edit-msg', '<span style="color:var(--vermelho)">Nome obrigatório.</span>'); return; }
-
-  const btn = document.getElementById('adm-edit-btn-salvar');
-  if (btn) { btn.disabled = true; btn.textContent = 'Salvando…'; }
-
-  try {
-    await fetchREST_WRITE('PATCH', `perfis?id=eq.${id}`, { nome, perfil, ativo });
-    fecharEdicao();
-    await carregarUsuarios();
-  } catch(e) {
-    setHTML('adm-edit-msg', `<span style="color:var(--vermelho)">Erro: ${e.message}</span>`);
-  } finally {
-    if (btn) { btn.disabled = false; btn.textContent = 'Salvar alterações'; }
-  }
 }
 
 async function convidar() {

@@ -7,11 +7,11 @@
   <link href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700;800&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet">
   <link rel="icon" type="image/svg+xml" href="../favicon_sistema.svg">
   <!-- CSS separado por responsabilidade -->
-  <link rel="stylesheet" href="css/base.css?v=2.1">
-  <link rel="stylesheet" href="css/layout.css?v=2.1">
-  <link rel="stylesheet" href="css/dashboard.css?v=2.1">
-  <link rel="stylesheet" href="css/respostas.css?v=2.1">
-  <link rel="stylesheet" href="css/admin.css?v=2.1">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/layout.css">
+  <link rel="stylesheet" href="css/dashboard.css">
+  <link rel="stylesheet" href="css/respostas.css">
+  <link rel="stylesheet" href="css/admin.css">
   <!-- Dependências externas -->
   <!-- libs via CDN (URLs estáveis e verificadas) -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -346,13 +346,6 @@
             <div class="filtro-grupo"><label>Nota mínima</label>
               <select id="res-f-nota-min"><option value="">Todas</option><option value="otimo">Ótimo</option><option value="bom">Bom ou melhor</option><option value="regular">Regular ou melhor</option></select>
             </div>
-            <div class="filtro-grupo" style="max-width:220px">
-              <label>Buscar em observações</label>
-              <div style="position:relative">
-                <svg style="position:absolute;left:10px;top:50%;transform:translateY(-50%);pointer-events:none" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--tx3)" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-                <input type="text" id="res-f-busca" placeholder="Ex: frio, banheiro…" style="padding-left:30px" oninput="aplicarFiltrosRes()">
-              </div>
-            </div>
             <div class="filtros-btns">
               <button class="btn-filtrar" onclick="recarregarEFiltrar()"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg> Filtrar</button>
               <button class="btn-limpar"  onclick="limparFiltrosRes()"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.5"/></svg> Limpar</button>
@@ -384,16 +377,7 @@
             </div>
             <div class="tabela-scroll">
               <table class="tab-aten">
-                <thead><tr>
-                  <th class="th-sort" data-col="created_at" onclick="ordenarPor('created_at')">Data/Hora <span class="sort-ico">↕</span></th>
-                  <th class="th-sort" data-col="periodo" onclick="ordenarPor('periodo')">Refeição <span class="sort-ico">↕</span></th>
-                  <th class="th-sort" data-col="refeicao" onclick="ordenarPor('refeicao')">Avaliação <span class="sort-ico">↕</span></th>
-                  <th class="th-sort" data-col="atendimento" onclick="ordenarPor('atendimento')">Atendimento <span class="sort-ico">↕</span></th>
-                  <th class="th-sort" data-col="ambiente" onclick="ordenarPor('ambiente')">Ambiente <span class="sort-ico">↕</span></th>
-                  <th class="col-restrito">Nome</th>
-                  <th>Observações</th>
-                  <th></th>
-                </tr></thead>
+                <thead><tr><th>Data/Hora</th><th>Refeição</th><th>Avaliação</th><th>Atendimento</th><th>Ambiente</th><th class="col-restrito">Nome</th><th>Observações</th><th></th></tr></thead>
                 <tbody id="res-tabela-corpo"><tr><td colspan="8" class="empty">Carregando…</td></tr></tbody>
               </table>
             </div>
@@ -449,15 +433,6 @@
         <div class="modal-overlay" id="res-modal" onclick="if(event.target===this)fecharModalRes()">
           <div class="modal">
             <div class="modal-header">
-              <div style="display:flex;align-items:center;gap:8px">
-                <button class="btn-modal-nav" id="res-modal-prev" onclick="navModal(-1)" title="Registro anterior">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg>
-                </button>
-                <span id="res-modal-nav-info" style="font-size:11px;color:var(--tx3);min-width:48px;text-align:center">—</span>
-                <button class="btn-modal-nav" id="res-modal-next" onclick="navModal(1)" title="Próximo registro">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg>
-                </button>
-              </div>
               <div class="modal-titulo">Detalhes da resposta</div>
               <button class="modal-fechar" onclick="fecharModalRes()">✕</button>
             </div>
@@ -503,45 +478,19 @@
 
         </div>
 
-      
-      <!-- A1 — Modal de edição de usuário -->
-      <div class="modal-overlay" id="adm-modal-edicao" onclick="if(event.target===this)fecharEdicao()">
-        <div class="modal" style="max-width:420px">
-          <div class="modal-header">
-            <div class="modal-titulo">Editar usuário</div>
-            <button class="modal-fechar" onclick="fecharEdicao()">✕</button>
-          </div>
-          <div class="modal-body" style="display:flex;flex-direction:column;gap:14px">
-            <input type="hidden" id="adm-edit-id">
-            <div class="adm-grupo"><label>Nome completo</label><input type="text" id="adm-edit-nome" placeholder="Nome do usuário"></div>
-            <div class="adm-grupo"><label>Perfil de acesso</label>
-              <select id="adm-edit-perfil"><option value="visualizador">Visualizador</option><option value="gestor">Gestor</option><option value="admin">Admin</option></select>
-            </div>
-            <div style="display:flex;align-items:center;gap:10px">
-              <input type="checkbox" id="adm-edit-ativo" style="width:16px;height:16px">
-              <label for="adm-edit-ativo" style="font-size:13px;cursor:pointer">Usuário ativo</label>
-            </div>
-            <div id="adm-edit-msg" style="font-size:12px;min-height:16px"></div>
-            <div style="display:flex;justify-content:flex-end;gap:8px">
-              <button onclick="fecharEdicao()" style="padding:8px 16px;border-radius:8px;border:1.5px solid var(--border);background:#fff;font-size:13px;cursor:pointer;color:var(--tx2)">Cancelar</button>
-              <button id="adm-edit-btn-salvar" onclick="salvarEdicao()" style="padding:8px 16px;border-radius:8px;border:none;background:var(--navy);color:#fff;font-size:13px;font-weight:700;cursor:pointer">Salvar alterações</button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section><!-- /sec-admin -->
+      </section><!-- /sec-admin -->
 
     </main>
   </div><!-- /content -->
 </div><!-- /app-layout -->
 
 <!-- JS — ordem importa: config → utils → auth → seções -->
-<script src="js/config.js?v=2.1"></script>
-<script src="js/utils.js?v=2.1"></script>
-<script src="js/auth.js?v=2.1"></script>
-<script src="js/dashboard.js?v=2.1"></script>
-<script src="js/respostas.js?v=2.1"></script>
-<script src="js/admin.js?v=2.1"></script>
+<script src="js/config.js"></script>
+<script src="js/utils.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/dashboard.js"></script>
+<script src="js/respostas.js"></script>
+<script src="js/admin.js"></script>
 <script>
   initApp();
 </script>
