@@ -689,10 +689,8 @@
       document.getElementById('auth-overlay').style.display = 'none';
       document.getElementById('app-content').style.display  = 'block';
       // Guardar nome do servidor para o payload
-      // Nunca usar email como nome — dados de contato não devem aparecer na interface
-      const nomeRaw = rows?.[0]?.nome;
-      window.STATE_SERVIDOR_NOME = (nomeRaw && nomeRaw.trim()) ? nomeRaw.trim() : 'Servidor não identificado';
-      window.STATE_SERVIDOR_UUID = session.user.id;
+      window.STATE_SERVIDOR_NOME = rows?.[0]?.nome || session.user.email || 'servidor';
+      window.STATE_SERVIDOR_UUID = session.user.id; // UUID para FK registrado_por
 
     } catch(e) {
       document.getElementById('auth-msg').textContent = '❌ Erro ao verificar acesso: ' + e.message;
