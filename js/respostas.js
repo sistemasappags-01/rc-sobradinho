@@ -251,7 +251,7 @@ function renderTabelaRes() {
           <td class="td-data">
               ${fmtData(r.created_at)}
               ${r.origem === 'manual'
-                ? '<span class="badge-manual" title="Lançado manualmente por ' + (r.registrado_por_nome || 'servidor') + '">Manual</span>'
+                ? '<span class="badge-manual" title="Lançado manualmente por ' + (r.registrado_por_nome && !r.registrado_por_nome.includes('@') ? r.registrado_por_nome : 'servidor não identificado') + '">Manual</span>'
                 : ''}
             </td>
           <td><span class="ref-badge ${classeRef(periodo)}">${nomePeriodo(periodo)}</span></td>
@@ -333,7 +333,7 @@ function verDetalhesRes(idx) {
             '<span class="badge-manual-modal">Lançamento Manual</span>' +
             '<div style="margin-top:4px;font-size:11px;color:var(--tx3)">' +
               '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="vertical-align:middle;margin-right:3px"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>' +
-              'Registrado por: <strong style="color:var(--tx1)">' + (r.registrado_por_nome || 'Servidor não identificado') + '</strong>' +
+              'Registrado por: <strong style="color:var(--tx1)">' + (r.registrado_por_nome && r.registrado_por_nome.trim() && !r.registrado_por_nome.includes('@') ? r.registrado_por_nome.trim() : 'Servidor não identificado') + '</strong>' +
             '</div>')
         : row('Origem',
             '<span style="display:inline-flex;align-items:center;gap:5px;font-size:12px;color:var(--verde);font-weight:600">' +
