@@ -96,7 +96,7 @@
 }
 /* Card Médias — tamanho natural, sem esticar */
 .res-card-medias {
-  /* natural height */
+  height: auto; /* tamanho natural, sem esticar */
 }
 
 /* ── Controle de acesso por perfil ── */
