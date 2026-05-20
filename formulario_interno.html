@@ -675,7 +675,7 @@
       // Sessão válida — verificar perfil ativo
       _token = session.access_token;
       const rows = await fetch(
-        `${SUPABASE_URL}/rest/v1/perfis?id=eq.${session.user.id}&select=ativo`,
+        `${SUPABASE_URL}/rest/v1/perfis?id=eq.${session.user.id}&select=ativo,nome`,
         { headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${_token}` } }
       ).then(r => r.json()).catch(() => []);
 
