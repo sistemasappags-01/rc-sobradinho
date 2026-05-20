@@ -57,10 +57,6 @@ async function initApp() {
 
   setInterval(atualizarDadosSilencioso, CONFIG.REFRESH_INTERVAL_MS);
 
-  // S1 — Verificar sessão a cada 4 minutos
-  // O token do Supabase expira após 1h — detectar expiração antes do erro
-  setInterval(verificarSessaoAtiva, 4 * 60 * 1000);
-
   window.addEventListener('popstate', () => {
     navigate(location.hash.replace('#', '') || 'dashboard', false);
   });
@@ -335,57 +331,6 @@ async function navigate(secao, pushState = true) {
   } finally {
     _navegando = false;
   }
-}
-
-// ── Verificação periódica de sessão ─────────────────────
-async function verificarSessaoAtiva() {
-  if (!STATE.sb) return;
-  try {
-    const { data, error } = await STATE.sb.auth.getSession();
-
-    // Sem sessão ou erro — redirecionar
-    if (error || !data?.session) {
-      mostrarAvisoSessao('Sua sessão expirou. Redirecionando para o login…');
-      setTimeout(() => { window.location.href = 'login.html'; }, 2500);
-      return;
-    }
-
-    // Sessão expira em menos de 5 minutos — renovar silenciosamente
-    const expiresAt  = data.session.expires_at; // timestamp Unix
-    const agora      = Math.floor(Date.now() / 1000);
-    const restantes  = expiresAt - agora;
-
-    if (restantes < 300) { // menos de 5 minutos
-      console.log('[sessão] Renovando token silenciosamente…');
-      const { data: refreshed, error: refreshErr } = await STATE.sb.auth.refreshSession();
-      if (refreshErr || !refreshed?.session) {
-        mostrarAvisoSessao('Sessão expirada. Redirecionando para o login…');
-        setTimeout(() => { window.location.href = 'login.html'; }, 2500);
-      } else {
-        STATE.token = refreshed.session.access_token;
-        console.log('[sessão] Token renovado com sucesso.');
-      }
-    }
-  } catch(e) {
-    console.warn('[sessão] Erro ao verificar sessão:', e.message);
-  }
-}
-
-function mostrarAvisoSessao(msg) {
-  // Exibir aviso discreto no topo da tela
-  let aviso = document.getElementById('sessao-aviso');
-  if (!aviso) {
-    aviso = document.createElement('div');
-    aviso.id = 'sessao-aviso';
-    aviso.style.cssText = [
-      'position:fixed', 'top:0', 'left:0', 'right:0', 'z-index:9998',
-      'background:#1a3a6e', 'color:#fff', 'text-align:center',
-      'padding:10px 16px', 'font-size:13px', 'font-family:'DM Sans',sans-serif',
-      'box-shadow:0 2px 8px rgba(0,0,0,.25)'
-    ].join(';');
-    document.body.appendChild(aviso);
-  }
-  aviso.textContent = msg;
 }
 
 // ── Overlay ──────────────────────────────────────────────

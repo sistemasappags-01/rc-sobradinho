@@ -153,15 +153,6 @@
         </div>
 
         <!-- KPIs -->
-                <!-- D1 — Estado sem dados -->
-        <div id="dash-sem-dados" style="display:none;flex-direction:column;align-items:center;justify-content:center;padding:60px 20px;gap:12px;text-align:center">
-          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#cbd5e1" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
-          <p style="font-size:15px;font-weight:700;color:#94a3b8;margin:0">Nenhum dado no período selecionado</p>
-          <p style="font-size:13px;color:#cbd5e1;margin:0">Tente ampliar o intervalo usando os botões 30 ou 90 dias.</p>
-        </div>
-
-        <!-- Conteúdo do dashboard (ocultado quando sem dados) -->
-        <div id="dash-conteudo">
         <div class="grid4 mb20">
           <div class="card">
             <div class="kpi">
@@ -336,7 +327,6 @@
           <div class="filtros-row">
             <div class="filtro-grupo"><label>Data início</label><input type="date" id="res-f-data-ini"></div>
             <div class="filtro-grupo"><label>Data fim</label><input type="date" id="res-f-data-fim"></div>
-            <div id="res-erro-data" style="display:none;grid-column:1/-1;font-size:12px;color:#e11d48;background:#fff1f2;border:1px solid #fecdd3;border-radius:8px;padding:6px 12px;margin-top:-4px"></div>
             <div class="filtro-grupo"><label>Refeição</label>
               <select id="res-f-refeicao"><option value="">Todas</option><option value="cafe">Café da Manhã</option><option value="almoco">Almoço</option><option value="jantar">Jantar</option></select>
             </div>
@@ -439,8 +429,6 @@
             <div class="modal-body" id="res-modal-body"></div>
           </div>
         </div>
-        </div><!-- /dash-conteudo -->
-
 
       </section><!-- /sec-respostas -->
 

@@ -29,19 +29,6 @@ function renderDashboard() {
   const d  = STATE.dadosAtual;
   const da = STATE.dadosAnt;
 
-  // D1 — Mostrar/ocultar estado "sem dados"
-  const semDadosEl = document.getElementById('dash-sem-dados');
-  const dashConteudo = document.getElementById('dash-conteudo');
-  if (semDadosEl && dashConteudo) {
-    if (!d || d.length === 0) {
-      semDadosEl.style.display  = 'flex';
-      dashConteudo.style.display = 'none';
-      return; // Não renderizar charts sem dados
-    }
-    semDadosEl.style.display  = 'none';
-    dashConteudo.style.display = 'block';
-  }
-
   // Calcular hash dos dados para detectar mudanças
   const hash = d.length + '|' + (da?.length||0) + '|' + STATE.diasFiltro;
   const mudou = hash !== _dadosHash;

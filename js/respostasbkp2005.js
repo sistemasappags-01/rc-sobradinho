@@ -52,24 +52,6 @@ async function recarregarEFiltrar() {
 function aplicarFiltrosRes() {
   const dataIni  = document.getElementById('res-f-data-ini')?.value || '';
   const dataFim  = document.getElementById('res-f-data-fim')?.value || '';
-
-  // R1 — Validar intervalo de datas
-  if (dataIni && dataFim && dataIni > dataFim) {
-    const el = document.getElementById('res-erro-data');
-    if (el) {
-      el.textContent = '⚠ Data início não pode ser posterior à data fim.';
-      el.style.display = 'block';
-    }
-    // Destacar os campos com erro
-    document.getElementById('res-f-data-ini')?.classList.add('input-erro');
-    document.getElementById('res-f-data-fim')?.classList.add('input-erro');
-    return; // Não filtrar com datas inválidas
-  }
-  // Limpar erro se datas são válidas
-  const elErro = document.getElementById('res-erro-data');
-  if (elErro) elErro.style.display = 'none';
-  document.getElementById('res-f-data-ini')?.classList.remove('input-erro');
-  document.getElementById('res-f-data-fim')?.classList.remove('input-erro');
   const refeicao = document.getElementById('res-f-refeicao')?.value || '';
   const aval     = document.getElementById('res-f-avaliacao')?.value || '';
   const notaMin  = document.getElementById('res-f-nota-min')?.value || '';

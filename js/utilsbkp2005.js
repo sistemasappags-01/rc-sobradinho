@@ -179,64 +179,17 @@ function destroyChart(id) {
 }
 
 // ── Fetch autenticado via REST API ───────────────────────
-// Inclui: timeout de 10s, 2 tentativas, mensagem de erro amigável
 async function fetchREST(path, params = '') {
-  const url      = `${CONFIG.SUPABASE_URL}/rest/v1/${path}${params}`;
-  const TIMEOUT  = 10_000; // 10 segundos
-  const TENTATIVAS = 2;
-
-  let ultimoErro = null;
-
-  for (let t = 1; t <= TENTATIVAS; t++) {
-    const ctrl = new AbortController();
-    const timer = setTimeout(() => ctrl.abort(), TIMEOUT);
-
-    try {
-      const res = await fetch(url, {
-        signal: ctrl.signal,
-        headers: {
-          'apikey':        CONFIG.SUPABASE_KEY,
-          'Authorization': `Bearer ${STATE.token}`,
-          'Accept':        'application/json',
-        }
-      });
-      clearTimeout(timer);
-
-      // Sessão expirada — redirecionar para login
-      if (res.status === 401) {
-        console.warn('[fetchREST] Sessão expirada — redirecionando para login');
-        setTimeout(() => { window.location.href = 'login.html'; }, 800);
-        throw new Error('Sessão expirada. Redirecionando para o login…');
-      }
-
-      if (!res.ok) {
-        const corpo = await res.json().catch(() => ({}));
-        throw new Error(corpo.message || `Erro HTTP ${res.status}`);
-      }
-
-      return res.json();
-
-    } catch(e) {
-      clearTimeout(timer);
-      ultimoErro = e;
-
-      // Não tentar novamente se for erro de sessão ou abort intencional
-      if (e.message?.includes('Sessão expirada')) throw e;
-
-      // Aguardar 800ms antes da próxima tentativa
-      if (t < TENTATIVAS) {
-        console.warn(`[fetchREST] Tentativa ${t} falhou: ${e.message}. Retentando…`);
-        await new Promise(res => setTimeout(res, 800));
-      }
+  const url = `${CONFIG.SUPABASE_URL}/rest/v1/${path}${params}`;
+  const res = await fetch(url, {
+    headers: {
+      'apikey':        CONFIG.SUPABASE_KEY,
+      'Authorization': `Bearer ${STATE.token}`,
+      'Accept':        'application/json',
     }
-  }
-
-  // Mensagem de erro amigável ao usuário
-  const msg = ultimoErro?.name === 'AbortError'
-    ? 'Tempo de conexão esgotado. Verifique sua internet.'
-    : `Falha ao carregar dados: ${ultimoErro?.message || 'erro desconhecido'}`;
-
-  throw new Error(msg);
+  });
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  return res.json();
 }
 
 // ── Fetch autenticado com método e body ──────────────────

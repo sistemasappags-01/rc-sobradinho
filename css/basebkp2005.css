@@ -267,19 +267,3 @@ button { font-family: inherit; }
   right: 10px;
   transform: none;
 }
-
-/* ── R1 — Input com erro de validação ── */
-input.input-erro {
-  border-color: #e11d48 !important;
-  background: #fff1f2 !important;
-  box-shadow: 0 0 0 3px rgba(225,29,72,.10) !important;
-}
-
-/* ── S1 — Aviso de sessão expirada ── */
-#sessao-aviso {
-  animation: slide-down .3s ease;
-}
-@keyframes slide-down {
-  from { transform: translateY(-100%); opacity: 0; }
-  to   { transform: translateY(0);     opacity: 1; }
-}
