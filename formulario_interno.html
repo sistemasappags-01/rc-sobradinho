@@ -710,6 +710,19 @@
   // F2 — Controle de duplicatas: guarda fingerprint do último envio
   let _ultimoEnvio = null; // { periodo, refeicao, atendimento, ambiente, timestamp }
 
+  // Funções auxiliares (inline — formulario não carrega utils.js)
+  function nomePeriodo(p) {
+    if (!p) return '—';
+    const m = { cafe:'Café da Manhã', almoco:'Almoço', jantar:'Jantar',
+      'café da manhã':'Café da Manhã', 'almoço':'Almoço', 'jantar':'Jantar' };
+    return m[p.toLowerCase ? p.toLowerCase() : p] || m[p] || p;
+  }
+
+  function notaValida(n) {
+    return n && n !== 'null' && n !== '' &&
+      ['Ótima','Ótimo','Boa','Bom','Regular','Ruim'].includes(n);
+  }
+
   // Mapeamento: display → chave normalizada (consistente com o sistema v2)
   const MAP_PERIODO = {
     'Café da Manhã': 'cafe',
