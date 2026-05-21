@@ -909,61 +909,10 @@
       return;
     }
 
-    // Período normalizado — necessário para F1 e F2
+    // Período normalizado para chave interna (cafe / almoco / jantar)
     const periodoNorm = MAP_PERIODO[periodoSelecionado] || periodoSelecionado;
 
-    // F1 — Resumo de confirmação antes do envio
-    const notasResumo = [
-      dados.refeicao    ? `Refeição: ${dados.refeicao}`    : null,
-      dados.atendimento ? `Atendimento: ${dados.atendimento}` : null,
-      dados.ambiente    ? `Ambiente: ${dados.ambiente}`    : null,
-    ].filter(Boolean).join(' · ');
-
-    const confirmouEnvio = await new Promise(resolve => {
-      const modal = document.createElement('div');
-      modal.id = 'modal-confirmar';
-      modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:9998;display:flex;align-items:center;justify-content:center;font-family:DM Sans,sans-serif;padding:16px';
-      modal.innerHTML =
-        '<div style="background:#fff;border-radius:16px;padding:24px 28px;max-width:400px;width:100%;box-shadow:0 8px 32px rgba(0,0,0,.18)">' +
-          '<p style="font-size:15px;font-weight:700;color:#0f2650;margin:0 0 12px">Confirmar avaliação?</p>' +
-          '<div style="background:#f8fafc;border-radius:10px;padding:12px 14px;margin-bottom:16px;font-size:13px;color:#1f2937;line-height:1.7">' +
-            '<strong>Período:</strong> ' + nomePeriodo(periodoNorm) + '<br>' +
-            notasResumo +
-            (obsEl.value.trim() ? '<br><strong>Observação:</strong> ' + obsEl.value.trim().substring(0,80) + (obsEl.value.length>80?'…':'') : '') +
-          '</div>' +
-          '<div style="display:flex;justify-content:flex-end;gap:10px">' +
-            '<button id="conf-cancel" style="padding:9px 18px;border-radius:9px;border:1.5px solid #e2e8f0;background:#fff;font-size:13px;font-weight:600;cursor:pointer;color:#64748b">Revisar</button>' +
-            '<button id="conf-ok" style="padding:9px 18px;border-radius:9px;border:none;background:#1a3a6e;color:#fff;font-size:13px;font-weight:700;cursor:pointer">Confirmar envio</button>' +
-          '</div>' +
-        '</div>';
-      document.body.appendChild(modal);
-      document.getElementById('conf-cancel').onclick = () => { modal.remove(); resolve(false); };
-      document.getElementById('conf-ok').onclick     = () => { modal.remove(); resolve(true);  };
-    });
-
-    if (!confirmouEnvio) return;
-
-    const ICONE_ENVIAR = btnEl.innerHTML; // Guardar HTML original do botão
-    btnEl.disabled   = true;
-    btnEl.innerHTML  = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg> Enviando…';
-
-    // periodoNorm já declarado acima
-
-    const payload = {
-      periodo:              periodoNorm,
-      refeicao:             dados.refeicao    || null,
-      atendimento:          dados.atendimento || null,
-      ambiente:             dados.ambiente    || null,
-      observacoes:          obsEl.value.trim() || null,
-      nome:                 document.getElementById('nome').value.trim()     || null,
-      telefone:             document.getElementById('telefone').value.trim() || null,
-      // Rastreabilidade LGPD — identificação do lançamento manual
-      origem:               'manual',
-      registrado_por:       STATE_SERVIDOR_UUID || null,
-      registrado_por_nome:  STATE_SERVIDOR_NOME || null,
-    };
-
-    // ── F2: Verificação de duplicata (camada 1 — client-side) ────
+    // F2 — Verificação de duplicata (client-side): aviso se envio idêntico < 60s
     const fingerprint = {
       periodo:     periodoNorm,
       refeicao:    dados.refeicao    || '',
@@ -972,7 +921,7 @@
     };
     const agora = Date.now();
     const isDuplicata = _ultimoEnvio
-      && (agora - _ultimoEnvio.timestamp) < 60_000 // menos de 60 segundos
+      && (agora - _ultimoEnvio.timestamp) < 60000
       && _ultimoEnvio.periodo     === fingerprint.periodo
       && _ultimoEnvio.refeicao    === fingerprint.refeicao
       && _ultimoEnvio.atendimento === fingerprint.atendimento
@@ -980,53 +929,35 @@
 
     if (isDuplicata) {
       const seg = Math.round((agora - _ultimoEnvio.timestamp) / 1000);
-      const confirmado = await confirmarDuplicata(
-        nomePeriodo(periodoNorm), seg
-      );
-      if (!confirmado) {
-        btnEl.disabled  = false;
-        btnEl.innerHTML = ICONE_ENVIAR;
-        return;
-      }
+      const msg = 'Você já registrou uma avaliação idêntica para '
+        + nomePeriodo(periodoNorm) + ' há ' + seg + 's. Enviar mesmo assim?';
+      if (!window.confirm(msg)) return;
     }
 
-    // ── F2: Verificação de duplicata (camada 2 — banco de dados) ───
-    if (STATE_SERVIDOR_UUID) {
-      try {
-        const params = new URLSearchParams({
-          registrado_por: `eq.${STATE_SERVIDOR_UUID}`,
-          periodo:        `eq.${periodoNorm}`,
-          refeicao:       `eq.${dados.refeicao || ''}`,
-          atendimento:    `eq.${dados.atendimento || ''}`,
-          ambiente:       `eq.${dados.ambiente || ''}`,
-          created_at:     `gte.${new Date(agora - 60_000).toISOString()}`,
-          select:         'id',
-          limit:          '1',
-        });
-        const check = await fetch(
-          `${SUPABASE_URL}/rest/v1/${TABELA}?${params}`,
-          { headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${_token}` } }
-        );
-        const rows = await check.json().catch(() => []);
-        if (Array.isArray(rows) && rows.length > 0 && !isDuplicata) {
-          const confirmado = await confirmarDuplicata(nomePeriodo(periodoNorm), null);
-          if (!confirmado) {
-            btnEl.disabled  = false;
-            btnEl.innerHTML = ICONE_ENVIAR;
-            return;
-          }
-        }
-      } catch(_) { /* falha silenciosa — não bloquear envio */ }
-    }
+    // Desabilitar botão e enviar
+    const txtOriginal = btnEl.textContent;
+    btnEl.disabled  = true;
+    btnEl.textContent = 'Enviando…';
+
+    const payload = {
+      periodo:             periodoNorm,
+      refeicao:            dados.refeicao    || null,
+      atendimento:         dados.atendimento || null,
+      ambiente:            dados.ambiente    || null,
+      observacoes:         obsEl.value.trim() || null,
+      nome:                document.getElementById('nome').value.trim()     || null,
+      telefone:            document.getElementById('telefone').value.trim() || null,
+      origem:              'manual',
+      registrado_por:      window.STATE_SERVIDOR_UUID || null,
+      registrado_por_nome: window.STATE_SERVIDOR_NOME || null,
+    };
 
     try {
-      // INSERT usa anon key — política RLS da tabela respostas permite inserts anônimos
-      // (autenticação é verificada no carregamento, não no insert)
-      const resp = await fetch(`${SUPABASE_URL}/rest/v1/${TABELA}`, {
+      const resp = await fetch(SUPABASE_URL + '/rest/v1/' + TABELA, {
         method:  'POST',
         headers: {
           'apikey':        SUPABASE_KEY,
-          'Authorization': `Bearer ${SUPABASE_KEY}`,
+          'Authorization': 'Bearer ' + SUPABASE_KEY,
           'Content-Type':  'application/json',
           'Prefer':        'return=minimal',
         },
@@ -1035,13 +966,12 @@
 
       if (!resp.ok) {
         const err = await resp.json().catch(() => ({}));
-        throw new Error(err.message || `HTTP ${resp.status}`);
+        throw new Error(err.message || 'HTTP ' + resp.status);
       }
 
-      // Limpar rascunho após envio bem-sucedido
+      // Sucesso
       sessionStorage.removeItem('rascunho-formulario');
-      // Salvar fingerprint do envio bem-sucedido
-      _ultimoEnvio = { ...fingerprint, timestamp: Date.now() };
+      _ultimoEnvio = Object.assign({}, fingerprint, { timestamp: Date.now() });
 
       document.getElementById('formulario').style.display  = 'none';
       document.getElementById('telaSucesso').style.display = 'block';
@@ -1050,10 +980,11 @@
     } catch(e) {
       erroEl.textContent = '❌ Erro ao enviar: ' + e.message;
       erroEl.style.display = 'block';
-      btnEl.disabled  = false;
-      btnEl.innerHTML = ICONE_ENVIAR;
+      btnEl.disabled    = false;
+      btnEl.textContent = txtOriginal;
     }
   }
+
 
   // ── F3 — Nova avaliação sem reload completo ─────────────────
   function novaAvaliacao() {
