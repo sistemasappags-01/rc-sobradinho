@@ -909,6 +909,9 @@
       return;
     }
 
+    // Período normalizado — necessário para F1 e F2
+    const periodoNorm = MAP_PERIODO[periodoSelecionado] || periodoSelecionado;
+
     // F1 — Resumo de confirmação antes do envio
     const notasResumo = [
       dados.refeicao    ? `Refeição: ${dados.refeicao}`    : null,
@@ -944,8 +947,7 @@
     btnEl.disabled   = true;
     btnEl.innerHTML  = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg> Enviando…';
 
-    // Período normalizado para chave interna (cafe / almoco / jantar)
-    const periodoNorm = MAP_PERIODO[periodoSelecionado] || periodoSelecionado;
+    // periodoNorm já declarado acima
 
     const payload = {
       periodo:              periodoNorm,
