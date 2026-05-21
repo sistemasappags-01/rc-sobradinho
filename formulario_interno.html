@@ -626,6 +626,9 @@
     <h2>Avaliação enviada!</h2>
     <p style="font-family:'Sora',sans-serif;font-size:17px;font-weight:800;color:#1a3a6e;margin-bottom:4px;">Sua opinião alimenta mudanças!</p>
     <p>Obrigado pela sua participação.<br>Ela é essencial para melhorarmos o serviço.</p>
+      <button onclick="novaAvaliacao()" style="margin-top:16px;padding:10px 22px;border-radius:10px;border:none;background:#1a3a6e;color:#fff;font-family:DM Sans,sans-serif;font-size:13px;font-weight:700;cursor:pointer">
+        + Registrar outra avaliação
+      </button>
     <p class="sucesso-detalhe">Sua resposta foi registrada com sucesso.</p>
     <div class="contagem-wrap">
       <div class="contagem-circulo">
@@ -688,6 +691,7 @@
       // OK — mostrar formulário
       document.getElementById('auth-overlay').style.display = 'none';
       document.getElementById('app-content').style.display  = 'block';
+      restaurarRascunho();
       // Guardar nome do servidor para o payload
       // Nunca usar email como nome — dados de contato não devem aparecer na interface
       const nomeRaw = rows?.[0]?.nome;
@@ -718,6 +722,41 @@
     el.classList.add('selecionado');
     periodoSelecionado = valor;
     document.getElementById('periodoBox').classList.remove('invalido');
+    salvarRascunho();
+  }
+
+  // M2 — Salvar rascunho a cada interação
+  function salvarRascunho() {
+    const rascunho = {
+      periodo:     periodoSelecionado,
+      refeicao:    dados.refeicao,
+      atendimento: dados.atendimento,
+      ambiente:    dados.ambiente,
+      observacoes: document.getElementById('observacoes')?.value || '',
+    };
+    try { sessionStorage.setItem('rascunho-formulario', JSON.stringify(rascunho)); } catch(_) {}
+  }
+
+  function restaurarRascunho() {
+    try {
+      const raw = sessionStorage.getItem('rascunho-formulario');
+      if (!raw) return;
+      const s = JSON.parse(raw);
+      // Restaurar período
+      if (s.periodo) {
+        const btn = document.querySelector(`.periodo-btn[onclick*="${s.periodo}"]`);
+        if (btn) btn.click();
+      }
+      // Restaurar observações
+      const obsEl = document.getElementById('observacoes');
+      if (obsEl && s.observacoes) obsEl.value = s.observacoes;
+      if (Object.values(s).some(v=>v)) {
+        const aviso = document.createElement('div');
+        aviso.style.cssText = 'background:#fffbeb;border:1px solid #fde68a;border-radius:8px;padding:8px 12px;font-size:12px;color:#92400e;margin-bottom:12px';
+        aviso.innerHTML = '📝 Rascunho restaurado. <button onclick="sessionStorage.removeItem('rascunho-formulario');this.parentElement.remove()" style="background:none;border:none;color:#92400e;font-size:12px;cursor:pointer;text-decoration:underline">Limpar</button>';
+        document.getElementById('periodoBox')?.insertAdjacentElement('beforebegin', aviso);
+      }
+    } catch(_) {}
   }
 
   function selecionar(el, tipo, valor) {
@@ -733,6 +772,7 @@
     dados[tipo] = valor;
     el.closest('.bloco').classList.remove('bloco-invalido');
     atualizarObservacoes();
+    salvarRascunho();
   }
 
   function atualizarObservacoes() {
@@ -856,6 +896,37 @@
       return;
     }
 
+    // F1 — Resumo de confirmação antes do envio
+    const notasResumo = [
+      dados.refeicao    ? `Refeição: ${dados.refeicao}`    : null,
+      dados.atendimento ? `Atendimento: ${dados.atendimento}` : null,
+      dados.ambiente    ? `Ambiente: ${dados.ambiente}`    : null,
+    ].filter(Boolean).join(' · ');
+
+    const confirmouEnvio = await new Promise(resolve => {
+      const modal = document.createElement('div');
+      modal.id = 'modal-confirmar';
+      modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:9998;display:flex;align-items:center;justify-content:center;font-family:DM Sans,sans-serif;padding:16px';
+      modal.innerHTML =
+        '<div style="background:#fff;border-radius:16px;padding:24px 28px;max-width:400px;width:100%;box-shadow:0 8px 32px rgba(0,0,0,.18)">' +
+          '<p style="font-size:15px;font-weight:700;color:#0f2650;margin:0 0 12px">Confirmar avaliação?</p>' +
+          '<div style="background:#f8fafc;border-radius:10px;padding:12px 14px;margin-bottom:16px;font-size:13px;color:#1f2937;line-height:1.7">' +
+            '<strong>Período:</strong> ' + nomePeriodo(periodoNorm) + '<br>' +
+            notasResumo +
+            (obsEl.value.trim() ? '<br><strong>Observação:</strong> ' + obsEl.value.trim().substring(0,80) + (obsEl.value.length>80?'…':'') : '') +
+          '</div>' +
+          '<div style="display:flex;justify-content:flex-end;gap:10px">' +
+            '<button id="conf-cancel" style="padding:9px 18px;border-radius:9px;border:1.5px solid #e2e8f0;background:#fff;font-size:13px;font-weight:600;cursor:pointer;color:#64748b">Revisar</button>' +
+            '<button id="conf-ok" style="padding:9px 18px;border-radius:9px;border:none;background:#1a3a6e;color:#fff;font-size:13px;font-weight:700;cursor:pointer">Confirmar envio</button>' +
+          '</div>' +
+        '</div>';
+      document.body.appendChild(modal);
+      document.getElementById('conf-cancel').onclick = () => { modal.remove(); resolve(false); };
+      document.getElementById('conf-ok').onclick     = () => { modal.remove(); resolve(true);  };
+    });
+
+    if (!confirmouEnvio) return;
+
     const ICONE_ENVIAR = btnEl.innerHTML; // Guardar HTML original do botão
     btnEl.disabled   = true;
     btnEl.innerHTML  = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg> Enviando…';
@@ -952,6 +1023,8 @@
         throw new Error(err.message || `HTTP ${resp.status}`);
       }
 
+      // Limpar rascunho após envio bem-sucedido
+      sessionStorage.removeItem('rascunho-formulario');
       // Salvar fingerprint do envio bem-sucedido
       _ultimoEnvio = { ...fingerprint, timestamp: Date.now() };
 
@@ -965,6 +1038,31 @@
       btnEl.disabled  = false;
       btnEl.innerHTML = ICONE_ENVIAR;
     }
+  }
+
+  // ── F3 — Nova avaliação sem reload completo ─────────────────
+  function novaAvaliacao() {
+    // Limpar estado do formulário
+    periodoSelecionado = '';
+    dados.refeicao = dados.atendimento = dados.ambiente = '';
+    document.querySelectorAll('.periodo-btn').forEach(b => b.classList.remove('selecionado'));
+    document.querySelectorAll('.face').forEach(f => {
+      f.classList.remove('selecionado');
+      const cb = f.querySelector('.checkbox-visual');
+      if (cb) cb.textContent = '( )';
+    });
+    document.getElementById('observacoes').value = '';
+    document.getElementById('nome').value = '';
+    document.getElementById('telefone').value = '';
+    document.getElementById('camposIdentificacao').classList.remove('visivel');
+    document.getElementById('erroMsg').style.display = 'none';
+    atualizarObservacoes();
+    // Limpar rascunho
+    sessionStorage.removeItem('rascunho-formulario');
+    // Mostrar formulário, ocultar sucesso
+    document.getElementById('telaSucesso').style.display = 'none';
+    document.getElementById('formulario').style.display  = 'block';
+    document.getElementById('periodoBox').scrollIntoView({ behavior:'smooth', block:'start' });
   }
 
   // ── Contagem regressiva na tela de sucesso ───────────────
