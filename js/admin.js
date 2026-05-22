@@ -77,12 +77,19 @@ function abrirEdicao(idx) {
   const u = _adm_usuarios[idx];
   if (!u) return;
 
-  document.getElementById('adm-edit-id').value      = u.id;
-  document.getElementById('adm-edit-nome').value    = u.nome || '';
-  document.getElementById('adm-edit-email').value   = u.email || '';
-  document.getElementById('adm-edit-perfil').value  = u.perfil || 'visualizador';
-  document.getElementById('adm-edit-ativo').checked = !!u.ativo;
+  document.getElementById('adm-edit-id').value       = u.id;
+  document.getElementById('adm-edit-nome').value     = u.nome || '';
+  document.getElementById('adm-edit-email').value    = u.email || '';
+  document.getElementById('adm-edit-unidade').value  = u.unidade || '';
+  document.getElementById('adm-edit-perfil').value   = u.perfil || 'visualizador';
+  document.getElementById('adm-edit-ativo').checked  = !!u.ativo;
+  // Atualizar e-mail na aba senha
+  const emailEl = document.getElementById('adm-senha-email');
+  if (emailEl) emailEl.textContent = u.email || '—';
+  // Resetar para aba Dados
+  trocarAba('dados');
   setHTML('adm-edit-msg', '');
+  setHTML('adm-senha-msg', '');
   document.getElementById('adm-modal-edicao').classList.add('show');
 }
 
@@ -91,10 +98,11 @@ function fecharEdicao() {
 }
 
 async function salvarEdicao() {
-  const id     = document.getElementById('adm-edit-id').value;
-  const nome   = document.getElementById('adm-edit-nome').value.trim();
-  const perfil = document.getElementById('adm-edit-perfil').value;
-  const ativo  = document.getElementById('adm-edit-ativo').checked;
+  const id      = document.getElementById('adm-edit-id').value;
+  const nome    = document.getElementById('adm-edit-nome').value.trim();
+  const unidade = document.getElementById('adm-edit-unidade').value.trim();
+  const perfil  = document.getElementById('adm-edit-perfil').value;
+  const ativo   = document.getElementById('adm-edit-ativo').checked;
 
   if (!nome) {
     setHTML('adm-edit-msg', '<span style="color:var(--vermelho)">Nome obrigatório.</span>');
@@ -105,7 +113,7 @@ async function salvarEdicao() {
   if (btn) { btn.disabled = true; btn.textContent = 'Salvando…'; }
 
   try {
-    await fetchREST_WRITE('PATCH', 'perfis?id=eq.' + id, { nome, perfil, ativo });
+    await fetchREST_WRITE('PATCH', 'perfis?id=eq.' + id, { nome, unidade, perfil, ativo });
     fecharEdicao();
     await carregarUsuarios();
   } catch(e) {
@@ -119,9 +127,10 @@ async function salvarEdicao() {
 // Fluxo: inserir em 'perfis' com ativo=false + enviar resetPassword
 // (Supabase envia email de redefinição de senha que serve como convite)
 async function convidar() {
-  const email  = document.getElementById('adm-email')?.value?.trim();
-  const nome   = document.getElementById('adm-nome')?.value?.trim();
-  const perfil = document.getElementById('adm-perfil')?.value;
+  const email   = document.getElementById('adm-email')?.value?.trim();
+  const nome    = document.getElementById('adm-nome')?.value?.trim();
+  const unidade = document.getElementById('adm-unidade')?.value?.trim() || '';
+  const perfil  = document.getElementById('adm-perfil')?.value;
 
   setHTML('adm-msg-convite', '');
 
@@ -151,7 +160,7 @@ async function convidar() {
 
   try {
     // 1. Inserir perfil com ativo=false (aguardando primeiro acesso)
-    await fetchREST_WRITE('POST', 'pre_cadastros', { email, nome, perfil });
+    await fetchREST_WRITE('POST', 'pre_cadastros', { email, nome, perfil, unidade });
 
     // 2. Tentar enviar convite via Supabase Auth (resetPasswordForEmail)
     //    O usuário receberá um link para definir a senha
@@ -169,8 +178,9 @@ async function convidar() {
       + '</div>'
     );
 
-    document.getElementById('adm-email').value = '';
-    document.getElementById('adm-nome').value  = '';
+    document.getElementById('adm-email').value   = '';
+    document.getElementById('adm-nome').value    = '';
+    document.getElementById('adm-unidade').value = '';
     await carregarUsuarios();
 
   } catch(e) {
@@ -183,3 +193,53 @@ async function convidar() {
 
 function setEl(id, txt)  { const el = document.getElementById(id); if (el) el.textContent = txt; }
 function setHTML(id, html){ const el = document.getElementById(id); if (el) el.innerHTML  = html; }
+
+// ── Abas do modal de edição ────────────────────────────
+function trocarAba(aba) {
+  ['dados', 'senha'].forEach(a => {
+    const tab = document.getElementById('adm-tab-' + a);
+    const btn = document.getElementById('adm-aba-' + a);
+    if (tab) tab.style.display = a === aba ? 'flex' : 'none';
+    if (btn) btn.classList.toggle('ativo', a === aba);
+  });
+}
+
+// ── Redefinir senha via e-mail ─────────────────────────
+async function resetarSenha() {
+  const emailEl = document.getElementById('adm-senha-email');
+  const email   = emailEl?.textContent?.trim();
+  const msgEl   = document.getElementById('adm-senha-msg');
+  const btn     = document.getElementById('adm-btn-reset-senha');
+
+  if (!email || email === '—') {
+    setHTML('adm-senha-msg',
+      '<div class="adm-msg-erro">E-mail não encontrado.</div>');
+    return;
+  }
+
+  if (btn) { btn.disabled = true; btn.textContent = 'Enviando…'; }
+  setHTML('adm-senha-msg', '');
+
+  try {
+    if (!STATE.sb) throw new Error('Supabase não inicializado.');
+
+    const { error } = await STATE.sb.auth.resetPasswordForEmail(email, {
+      redirectTo: window.location.origin
+        + window.location.pathname.replace(/[^/]*$/, '') + 'app.html',
+    });
+
+    if (error) throw error;
+
+    setHTML('adm-senha-msg',
+      '<div class="adm-msg-ok">✅ E-mail de redefinição enviado para <strong>'
+      + email + '</strong>.</div>');
+  } catch(e) {
+    setHTML('adm-senha-msg',
+      '<div class="adm-msg-erro">❌ Erro: ' + e.message + '</div>');
+  } finally {
+    if (btn) {
+      btn.disabled = false;
+      btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg> Enviar link de redefinição';
+    }
+  }
+}

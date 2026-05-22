@@ -475,27 +475,29 @@
       ══════════════════════════════════════════════════ -->
       <section id="sec-admin" class="section">
 
-        <!-- Cabeçalho padronizado -->
+        <!-- Cabeçalho padronizado — igual ao de respostas -->
         <div class="sec-header">
-          <div>
+          <div class="sec-page-titulo">
             <h1 class="sec-h1-bar">USUÁRIOS</h1>
             <p class="sec-h1-sub">Gestão de acesso e perfis do sistema.</p>
           </div>
         </div>
 
-        <!-- Grid responsivo: tabela + formulário -->
+        <!-- Grid: lista de usuários (esquerda) + painel cadastro (direita) -->
         <div class="adm-layout-grid">
 
-          <!-- Lista de usuários -->
+          <!-- ── Lista de usuários ── -->
           <div class="card card-p">
             <div class="sec-titulo-secao">USUÁRIOS CADASTRADOS</div>
-            <div id="adm-lista"><div class="empty">Carregando…</div></div>
+            <div class="tabela-scroll">
+              <div id="adm-lista"><div class="empty">Carregando…</div></div>
+            </div>
           </div>
 
-          <!-- Painel lateral: convidar + info -->
-          <div style="display:flex;flex-direction:column;gap:14px">
+          <!-- ── Painel lateral ── -->
+          <div class="adm-painel">
 
-            <!-- Convidar novo usuário -->
+            <!-- Novo usuário -->
             <div class="card card-p">
               <div class="sec-titulo-secao">NOVO USUÁRIO</div>
               <div class="adm-form">
@@ -506,6 +508,10 @@
                 <div class="adm-grupo">
                   <label>E-mail</label>
                   <input type="email" id="adm-email" placeholder="usuario@email.com" autocomplete="off">
+                </div>
+                <div class="adm-grupo">
+                  <label>Unidade</label>
+                  <input type="text" id="adm-unidade" placeholder="Ex: RC Sobradinho" autocomplete="off">
                 </div>
                 <div class="adm-grupo">
                   <label>Perfil de acesso</label>
@@ -523,59 +529,92 @@
               </div>
             </div>
 
-            <!-- Aviso sobre criação no Auth -->
-            <div class="card card-p" style="border-left:3px solid var(--gold)">
-              <p style="font-size:12px;color:var(--tx2);line-height:1.6">
-                <strong style="color:var(--tx1)">⚠ Como adicionar usuários:</strong><br>
+            <!-- Aviso de instrução -->
+            <div class="card card-p adm-aviso">
+              <p>
+                <strong>⚠ Como ativar o acesso:</strong><br>
                 1. Pré-cadastre aqui (cria o perfil)<br>
-                2. No Supabase Dashboard → Auth → Users, crie o usuário com o mesmo e-mail<br>
-                3. O usuário fará login normalmente
+                2. No Supabase → Authentication → Users, convide com o mesmo e-mail<br>
+                3. O usuário receberá o link por e-mail e fará login normalmente
               </p>
             </div>
 
           </div>
         </div>
 
-        <!-- Modal de edição de usuário -->
+        <!-- ── Modal edição de usuário ── -->
         <div class="modal-overlay" id="adm-modal-edicao" onclick="if(event.target===this)fecharEdicao()">
-          <div class="modal" style="max-width:440px">
+          <div class="modal" style="max-width:460px">
             <div class="modal-header">
               <div class="modal-titulo">Editar usuário</div>
               <button class="modal-fechar" onclick="fecharEdicao()">✕</button>
             </div>
-            <div class="modal-body" style="display:flex;flex-direction:column;gap:14px">
+            <div class="modal-body">
               <input type="hidden" id="adm-edit-id">
-              <div class="adm-grupo">
-                <label>Nome completo</label>
-                <input type="text" id="adm-edit-nome" placeholder="Nome do usuário">
+
+              <!-- Abas: Dados | Senha -->
+              <div class="adm-abas">
+                <button class="adm-aba ativo" id="adm-aba-dados" onclick="trocarAba('dados')">Dados</button>
+                <button class="adm-aba" id="adm-aba-senha" onclick="trocarAba('senha')">Redefinir senha</button>
               </div>
-              <div class="adm-grupo">
-                <label>E-mail (somente leitura)</label>
-                <input type="email" id="adm-edit-email" readonly
-                  style="opacity:.6;cursor:not-allowed;background:var(--page)">
+
+              <!-- Aba: Dados -->
+              <div id="adm-tab-dados" style="display:flex;flex-direction:column;gap:12px;margin-top:14px">
+                <div class="adm-grupo">
+                  <label>Nome completo</label>
+                  <input type="text" id="adm-edit-nome" placeholder="Nome do usuário">
+                </div>
+                <div class="adm-grupo">
+                  <label>E-mail</label>
+                  <input type="email" id="adm-edit-email" readonly
+                    style="opacity:.55;cursor:not-allowed">
+                </div>
+                <div class="adm-grupo">
+                  <label>Unidade</label>
+                  <input type="text" id="adm-edit-unidade" placeholder="Ex: RC Sobradinho">
+                </div>
+                <div class="adm-grupo">
+                  <label>Perfil de acesso</label>
+                  <select id="adm-edit-perfil">
+                    <option value="visualizador">Visualizador — somente leitura</option>
+                    <option value="gestor">Gestor — leitura + lançamentos</option>
+                    <option value="admin">Admin — acesso total</option>
+                  </select>
+                </div>
+                <div class="adm-ativo-wrap">
+                  <input type="checkbox" id="adm-edit-ativo">
+                  <label for="adm-edit-ativo">Usuário ativo</label>
+                </div>
+                <div id="adm-edit-msg" class="adm-edit-msg"></div>
+                <div class="adm-modal-btns">
+                  <button onclick="fecharEdicao()" class="btn-limpar">Cancelar</button>
+                  <button id="adm-edit-btn-salvar" onclick="salvarEdicao()" class="btn-filtrar">Salvar alterações</button>
+                </div>
               </div>
-              <div class="adm-grupo">
-                <label>Perfil de acesso</label>
-                <select id="adm-edit-perfil">
-                  <option value="visualizador">Visualizador — somente leitura</option>
-                  <option value="gestor">Gestor — leitura + lançamentos</option>
-                  <option value="admin">Admin — acesso total</option>
-                </select>
+
+              <!-- Aba: Redefinir senha -->
+              <div id="adm-tab-senha" style="display:none;flex-direction:column;gap:12px;margin-top:14px">
+                <p style="font-size:13px;color:var(--tx2);line-height:1.6">
+                  Será enviado um e-mail de redefinição de senha para
+                  <strong id="adm-senha-email" style="color:var(--tx1)">—</strong>.
+                  O usuário receberá um link para criar uma nova senha.
+                </p>
+                <div id="adm-senha-msg" class="adm-edit-msg"></div>
+                <div class="adm-modal-btns">
+                  <button onclick="fecharEdicao()" class="btn-limpar">Cancelar</button>
+                  <button id="adm-btn-reset-senha" onclick="resetarSenha()" class="btn-filtrar">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                    Enviar link de redefinição
+                  </button>
+                </div>
               </div>
-              <div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-top:1px solid var(--border)">
-                <input type="checkbox" id="adm-edit-ativo" style="width:16px;height:16px;accent-color:var(--navy)">
-                <label for="adm-edit-ativo" style="font-size:13px;color:var(--tx1);cursor:pointer;font-weight:600">Usuário ativo</label>
-              </div>
-              <div id="adm-edit-msg" style="font-size:12px;min-height:16px"></div>
-              <div style="display:flex;justify-content:flex-end;gap:8px;padding-top:4px">
-                <button onclick="fecharEdicao()" class="btn-limpar">Cancelar</button>
-                <button id="adm-edit-btn-salvar" onclick="salvarEdicao()" class="btn-filtrar">Salvar alterações</button>
-              </div>
+
             </div>
           </div>
         </div>
 
       </section>
+
 <!-- /sec-admin -->
 
     </main>
