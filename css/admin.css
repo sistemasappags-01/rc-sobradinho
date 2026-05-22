@@ -1,13 +1,76 @@
 /* admin.css — Estilos exclusivos do admin */
-.adm-form   { display:flex; flex-direction:column; gap:14px; }
-.adm-row    { display:flex; gap:12px; flex-wrap:wrap; }
-.adm-grupo  { display:flex; flex-direction:column; gap:4px; flex:1; min-width:160px; }
-.adm-grupo label { font-size:11px; font-weight:600; color:var(--tx2); text-transform:uppercase; letter-spacing:.5px; }
-.adm-grupo input, .adm-grupo select {
-  padding:9px 12px; border:1.5px solid var(--border); border-radius:var(--radius-sm);
-  font-size:13px; font-family:inherit; color:var(--tx1); background:var(--page); outline:none; transition:border-color .15s;
+
+/* ── Layout grid responsivo ── */
+.adm-layout-grid {
+  display: grid;
+  grid-template-columns: 1fr 320px;
+  gap: 16px;
+  align-items: start;
 }
-.adm-grupo input:focus, .adm-grupo select:focus { border-color:var(--navy); box-shadow:0 0 0 3px rgba(26,58,110,.10); }
-.btn-convidar { padding:9px 20px; border-radius:var(--radius-sm); background:linear-gradient(135deg,var(--navy-d),var(--navy)); color:#fff; border:none; font-size:13px; font-weight:600; font-family:inherit; cursor:pointer; transition:filter .15s; align-self:flex-end; }
-.btn-convidar:hover { filter:brightness(1.1); }
-.btn-convidar:disabled { opacity:.6; }
+@media (max-width: 900px) {
+  .adm-layout-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ── Formulário de convite ── */
+.adm-form { display: flex; flex-direction: column; gap: 12px; }
+
+.adm-grupo { display: flex; flex-direction: column; gap: 4px; }
+.adm-grupo label {
+  font-size: 11px; font-weight: 600;
+  color: var(--tx2); text-transform: uppercase; letter-spacing: .5px;
+}
+.adm-grupo input,
+.adm-grupo select {
+  padding: 10px 12px; height: 44px;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 13px; font-family: inherit;
+  color: var(--tx1); background: var(--page);
+  outline: none; transition: border-color .15s;
+  width: 100%;
+}
+.adm-grupo input:focus,
+.adm-grupo select:focus {
+  border-color: var(--navy);
+  box-shadow: 0 0 0 3px rgba(26,58,110,.10);
+}
+
+/* ── Botão convidar — igual ao btn-filtrar ── */
+.btn-convidar {
+  padding: 9px 18px;
+  border-radius: var(--radius-sm);
+  background: var(--navy);
+  color: #fff; border: none;
+  font-size: 13px; font-weight: 600;
+  font-family: inherit; cursor: pointer;
+  transition: filter .15s;
+  display: flex; align-items: center; gap: 6px;
+  align-self: flex-start;
+}
+.btn-convidar:hover    { filter: brightness(1.12); }
+.btn-convidar:disabled { opacity: .6; cursor: not-allowed; }
+
+/* ── Mensagens de feedback ── */
+.adm-msg-ok {
+  padding: 8px 12px;
+  background: rgba(5,150,105,.06);
+  border: 1px solid rgba(5,150,105,.25);
+  color: var(--verde);
+  border-radius: 8px;
+  font-size: 12.5px; font-weight: 600;
+  line-height: 1.5;
+}
+.adm-msg-erro {
+  padding: 8px 12px;
+  background: rgba(225,29,72,.06);
+  border: 1px solid rgba(225,29,72,.20);
+  color: var(--vermelho);
+  border-radius: 8px;
+  font-size: 12.5px; font-weight: 600;
+}
+
+/* ── Tabela de usuários ── */
+.adm-layout-grid .tab-aten th { white-space: nowrap; }
+.adm-layout-grid .tab-aten td { vertical-align: middle; }
