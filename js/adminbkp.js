@@ -127,76 +127,70 @@ async function salvarEdicao() {
 // Fluxo: inserir em 'perfis' com ativo=false + enviar resetPassword
 // (Supabase envia email de redefinição de senha que serve como convite)
 async function convidar() {
-  const email   = (document.getElementById('adm-email')?.value || '').trim();
-  const nome    = (document.getElementById('adm-nome')?.value || '').trim();
-  const unidade = (document.getElementById('adm-unidade')?.value || '').trim();
-  const perfil  = document.getElementById('adm-perfil')?.value || 'visualizador';
+  const email   = document.getElementById('adm-email')?.value?.trim();
+  const nome    = document.getElementById('adm-nome')?.value?.trim();
+  const unidade = document.getElementById('adm-unidade')?.value?.trim() || '';
+  const perfil  = document.getElementById('adm-perfil')?.value;
 
   setHTML('adm-msg-convite', '');
 
   if (!email || !nome) {
-    setHTML('adm-msg-convite', '<div class="adm-msg-erro">Preencha nome e e-mail.</div>');
+    setHTML('adm-msg-convite',
+      '<div class="adm-msg-erro">⚠️ Preencha nome e e-mail.</div>');
     return;
   }
 
-  const reEmail = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
-  if (!reEmail.test(email)) {
-    setHTML('adm-msg-convite', '<div class="adm-msg-erro">E-mail inválido.</div>');
+  // Validar formato de email
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    setHTML('adm-msg-convite',
+      '<div class="adm-msg-erro">⚠️ E-mail inválido.</div>');
     return;
   }
 
-  const existente = _adm_usuarios.find(function(u) {
-    return u.email && u.email.toLowerCase() === email.toLowerCase();
-  });
+  // Verificar duplicata
+  const existente = _adm_usuarios.find(u => u.email?.toLowerCase() === email.toLowerCase());
   if (existente) {
     setHTML('adm-msg-convite',
-      '<div class="adm-msg-erro">E-mail ja cadastrado (' + existente.nome + ').</div>');
+      '<div class="adm-msg-erro">❌ E-mail já cadastrado (' + existente.nome + ').</div>');
     return;
   }
 
   const btn = document.getElementById('adm-btn-convidar');
-  if (btn) { btn.disabled = true; btn.textContent = 'Criando...'; }
+  if (btn) { btn.disabled = true; btn.textContent = 'Processando…'; }
 
   try {
-    var resp = await fetch(
-      CONFIG.SUPABASE_URL + '/functions/v1/criar-usuario',
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type':  'application/json',
-          'Authorization': 'Bearer ' + STATE.token,
-        },
-        body: JSON.stringify({ email: email, nome: nome, perfil: perfil, unidade: unidade }),
-      }
-    );
+    // 1. Inserir perfil com ativo=false (aguardando primeiro acesso)
+    // pre_cadastros só recebe email, nome, perfil (schema básico)
+    await fetchREST_WRITE('POST', 'pre_cadastros', { email, nome, perfil });
 
-    var result = {};
-    try { result = await resp.json(); } catch(e) {}
-
-    if (!resp.ok || result.ok === false) {
-      throw new Error(result.error || 'HTTP ' + resp.status);
+    // 2. Tentar enviar convite via Supabase Auth (resetPasswordForEmail)
+    //    O usuário receberá um link para definir a senha
+    if (STATE.sb) {
+      await STATE.sb.auth.resetPasswordForEmail(email, {
+        redirectTo: window.location.origin
+          + window.location.pathname.replace(/[^/]*$/, '') + 'app.html',
+      });
     }
 
     setHTML('adm-msg-convite',
       '<div class="adm-msg-ok">'
-      + 'Usuario <strong>' + nome + '</strong> criado!<br>'
-      + '<small>Convite enviado para ' + email + '.</small>'
-      + '</div>');
+      + '✅ Pré-cadastro criado para <strong>' + email + '</strong>.<br>'
+      + '<small>O usuário precisa ser criado no Supabase Auth e então fará login normalmente.</small>'
+      + '</div>'
+    );
 
     document.getElementById('adm-email').value   = '';
     document.getElementById('adm-nome').value    = '';
-    if (document.getElementById('adm-unidade'))
-      document.getElementById('adm-unidade').value = '';
+    document.getElementById('adm-unidade').value = '';
     await carregarUsuarios();
 
-  } catch(ex) {
+  } catch(e) {
     setHTML('adm-msg-convite',
-      '<div class="adm-msg-erro">Erro: ' + ex.message + '</div>');
+      '<div class="adm-msg-erro">❌ Erro: ' + e.message + '</div>');
   } finally {
-    if (btn) { btn.disabled = false; btn.textContent = 'Cadastrar usuario'; }
+    if (btn) { btn.disabled = false; btn.textContent = 'Enviar convite'; }
   }
 }
-
 
 function setEl(id, txt)  { const el = document.getElementById(id); if (el) el.textContent = txt; }
 function setHTML(id, html){ const el = document.getElementById(id); if (el) el.innerHTML  = html; }
